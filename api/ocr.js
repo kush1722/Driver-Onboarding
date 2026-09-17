@@ -1,0 +1,65 @@
+import { GoogleGenAI } from '@google/genai';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { imageBase64, fullName, dateOfBirth } = req.body;
+  if (!imageBase64 || !fullName) {
+    return res.status(400).json({ error: 'Missing required fields: imageBase64 and fullName' });
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    
+    // imageBase64 comes as "data:image/jpeg;base64,/9j/4AAQ..."
+    // We need to strip the prefix for the Gemini API
+    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      return res.status(400).json({ error: 'Invalid base64 string' });
+    }
+    
+    const mimeType = matches[1];
+    const data = matches[2];
+
+    const prompt = `
+      You are an expert identity document validator.
+      I am providing an image of an ID document.
+      The user claims their full name is "${fullName}" and their date of birth is "${dateOfBirth || 'Unknown'}".
+      Carefully extract the name and date of birth from the document.
+      Do they match the user's claims? 
+      Be reasonably lenient with OCR typos, name order, or date formats (e.g. 01/12/90 matches Dec 1st 1990).
+      Return ONLY a JSON object with the following exact structure, with no markdown formatting:
+      {
+        "isMatch": true or false,
+        "extractedName": "The name you found on the ID",
+        "extractedDob": "The DOB you found on the ID"
+      }
+    `;
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: [
+            {
+                role: 'user',
+                parts: [
+                    { inlineData: { mimeType, data } },
+                    { text: prompt }
+                ]
+            }
+        ]
+    });
+
+    const textResponse = response.text;
+    
+    // Clean potential markdown blocks
+    const jsonStr = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+    const result = JSON.parse(jsonStr);
+
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    return res.status(500).json({ error: 'Failed to process ID document' });
+  }
+}
