@@ -55,7 +55,7 @@ export default function ApplicationsQueue() {
       </div>
 
       <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-        <div className="hide-scrollbar" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem', whiteSpace: 'nowrap' }}>
+        <div className="hide-scrollbar" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem', paddingRight: '3rem', whiteSpace: 'nowrap' }}>
           {['all', 'submitted', 'under_review', 'approved', 'rejected'].map(f => (
             <button 
               key={f}
@@ -75,11 +75,11 @@ export default function ApplicationsQueue() {
             </button>
           ))}
         </div>
-        <div style={{ position: 'absolute', top: 0, right: 0, bottom: '0.5rem', width: '3rem', background: 'linear-gradient(to right, transparent, var(--bg-color))', pointerEvents: 'none', zIndex: 10 }}></div>
+        <div style={{ position: 'absolute', top: 0, right: 0, bottom: '0.5rem', width: '3rem', background: 'linear-gradient(to right, rgba(10,15,30,0), rgba(10,15,30,1))', pointerEvents: 'none', zIndex: 10 }}></div>
       </div>
 
       <div style={{ position: 'relative', marginBottom: '1rem' }}>
-        <div className="glass-panel hide-scrollbar" style={{ overflowX: 'auto', padding: 0 }}>
+        <div className="glass-panel hide-scrollbar mobile-no-bg" style={{ overflowX: 'auto', padding: 0 }}>
           <table className="responsive-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)' }}>
@@ -122,14 +122,18 @@ export default function ApplicationsQueue() {
         <div className="table-fade" style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width: '4rem', background: 'linear-gradient(to right, transparent, rgba(17, 24, 39, 0.9))', pointerEvents: 'none', borderTopRightRadius: '16px', borderBottomRightRadius: '16px', zIndex: 10 }}></div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem', padding: '0 0.5rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem', padding: '0 0.5rem' }}>
         <div>
           Showing {filteredApps.length} of {allApplications.length} application{allApplications.length !== 1 ? 's' : ''}
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <span><strong style={{ color: 'var(--text-primary)' }}>{allApplications.filter(a => a.status === 'submitted').length}</strong> New</span>
-          <span><strong style={{ color: 'var(--text-primary)' }}>{allApplications.filter(a => a.status === 'under_review').length}</strong> Reviewing</span>
-          <span><strong style={{ color: 'var(--text-primary)' }}>{allApplications.filter(a => a.status === 'approved').length}</strong> Approved</span>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--surface-border)', paddingTop: '1rem', width: '100%', flexWrap: 'wrap', gap: '1rem' }}>
+          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Global Queue Totals</span>
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <span><strong style={{ color: 'var(--text-primary)' }}>{allApplications.filter(a => a.status === 'submitted').length}</strong> New</span>
+            <span><strong style={{ color: 'var(--text-primary)' }}>{allApplications.filter(a => a.status === 'under_review').length}</strong> Reviewing</span>
+            <span><strong style={{ color: 'var(--text-primary)' }}>{allApplications.filter(a => a.status === 'approved').length}</strong> Approved</span>
+          </div>
         </div>
       </div>
     </div>

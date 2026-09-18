@@ -226,6 +226,12 @@ input::placeholder {
   .table-fade {
     display: none !important;
   }
+  .mobile-no-bg {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
 }
 
 /* Link styling */
