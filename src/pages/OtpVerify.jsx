@@ -9,10 +9,11 @@ export default function OtpVerify() {
   const fullName = location.state?.fullName;
   
   const [email, setEmail] = useState(initialEmail);
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [countdown, setCountdown] = useState(300); // 5 minutes
+  const inputRefs = useRef([]);
 
   useEffect(() => {
     // We no longer kick them out if there's no email. 
@@ -24,7 +25,37 @@ export default function OtpVerify() {
     return () => clearInterval(timer);
   }, [email, navigate]);
 
-  // Handled entirely by single input now
+  const handleChange = (index, value) => {
+    // Strip out any non-numeric characters (useful for mobile auto-fill)
+    const cleanValue = value.replace(/[^0-9]/g, '');
+    if (!cleanValue && value !== '') return; 
+    
+    const newOtp = [...otp];
+    // Allow pasting or mobile autofill
+    if (cleanValue.length > 1) {
+      const pasted = cleanValue.slice(0, 8).split('');
+      for (let i = 0; i < 8; i++) {
+        newOtp[i] = pasted[i] || '';
+      }
+      setOtp(newOtp);
+      // Focus last filled
+      const focusIndex = Math.min(pasted.length, 7);
+      inputRefs.current[focusIndex]?.focus();
+    } else {
+      newOtp[index] = cleanValue;
+      setOtp(newOtp);
+      // Auto-advance
+      if (cleanValue !== '' && index < 7) {
+        inputRefs.current[index + 1]?.focus();
+      }
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
 
   const verifyCode = async (codeStr) => {
     if (!email) {
@@ -68,8 +99,9 @@ export default function OtpVerify() {
   };
 
   useEffect(() => {
-    if (otp.length === 8 && !loading) {
-      verifyCode(otp);
+    const currentCode = otp.join('');
+    if (currentCode.length === 8 && !loading) {
+      verifyCode(currentCode);
     }
   }, [otp]);
 
@@ -119,29 +151,29 @@ export default function OtpVerify() {
           </p>
         )}
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={8}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-            disabled={loading}
-            placeholder="••••••••"
-            style={{
-              width: '100%',
-              maxWidth: '300px',
-              height: '4rem',
-              textAlign: 'center',
-              fontSize: '2rem',
-              fontWeight: '700',
-              letterSpacing: '0.75rem',
-              borderRadius: '12px',
-              border: '2px solid var(--surface-border)',
-              backgroundColor: 'var(--surface-color)',
-              color: 'var(--text-primary)'
-            }}
-          />
+        <div style={{ display: 'flex', gap: 'clamp(0.25rem, 1.5vw, 0.5rem)', justifyContent: 'center', marginBottom: '2rem' }}>
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              ref={el => inputRefs.current[index] = el}
+              type="text"
+              inputMode="numeric"
+              maxLength={8}
+              value={digit}
+              onChange={(e) => handleChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              disabled={loading}
+              style={{
+                width: 'clamp(1.5rem, 10vw, 3rem)',
+                height: 'clamp(2.5rem, 12vw, 3.5rem)',
+                textAlign: 'center',
+                fontSize: 'clamp(1.2rem, 5vw, 1.5rem)',
+                fontWeight: '600',
+                padding: '0',
+                borderRadius: '8px'
+              }}
+            />
+          ))}
         </div>
 
         {error && <p className="error-text mb-4">{error}</p>}
@@ -149,8 +181,8 @@ export default function OtpVerify() {
         <button 
           className="btn btn-primary" 
           style={{ width: '100%', marginBottom: '1.5rem', height: '3rem', fontSize: '1.1rem' }}
-          onClick={() => verifyCode(otp)}
-          disabled={loading || otp.length !== 8}
+          onClick={() => verifyCode(otp.join(''))}
+          disabled={loading || otp.join('').length !== 8}
         >
           {loading ? 'Verifying...' : 'Verify Code'}
         </button>
