@@ -170,8 +170,8 @@ export default function ApplicationDetail() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
+        <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
             <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Personal Information</h3>
@@ -230,7 +230,7 @@ export default function ApplicationDetail() {
 
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
           {/* Identity & Face Match Box */}
           <div className="glass-panel" style={{ padding: '1.5rem', border: app.face_match_status === 'match' ? '1px solid var(--success-color)' : app.face_match_status === 'needs_review' ? '1px solid var(--warning-color)' : '1px solid var(--surface-border)' }}>
