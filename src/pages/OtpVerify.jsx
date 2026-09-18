@@ -8,7 +8,7 @@ export default function OtpVerify() {
   const email = location.state?.email;
   const fullName = location.state?.fullName;
   
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [countdown, setCountdown] = useState(300); // 5 minutes
@@ -33,19 +33,19 @@ export default function OtpVerify() {
     const newOtp = [...otp];
     // Allow pasting
     if (value.length > 1) {
-      const pasted = value.slice(0, 6).split('');
+      const pasted = value.slice(0, 8).split('');
       for (let i = 0; i < pasted.length; i++) {
-        if (index + i < 6) newOtp[index + i] = pasted[i];
+        if (index + i < 8) newOtp[index + i] = pasted[i];
       }
       setOtp(newOtp);
       // Focus last filled
-      const focusIndex = Math.min(index + pasted.length, 5);
+      const focusIndex = Math.min(index + pasted.length, 7);
       inputRefs.current[focusIndex]?.focus();
     } else {
       newOtp[index] = value;
       setOtp(newOtp);
       // Auto-advance
-      if (value !== '' && index < 5) {
+      if (value !== '' && index < 7) {
         inputRefs.current[index + 1]?.focus();
       }
     }
@@ -95,7 +95,7 @@ export default function OtpVerify() {
 
   useEffect(() => {
     const currentCode = otp.join('');
-    if (currentCode.length === 6 && !loading) {
+    if (currentCode.length === 8 && !loading) {
       verifyCode(currentCode);
     }
   }, [otp]);
@@ -126,7 +126,7 @@ export default function OtpVerify() {
       <div className="glass-panel auth-card">
         <h1>Check your email</h1>
         <p className="subtitle">
-          We sent a 6-digit verification code to<br/>
+          We sent an 8-digit verification code to<br/>
           <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>
         </p>
 
@@ -137,7 +137,7 @@ export default function OtpVerify() {
               ref={el => inputRefs.current[index] = el}
               type="text"
               inputMode="numeric"
-              maxLength={6}
+              maxLength={8}
               value={digit}
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
