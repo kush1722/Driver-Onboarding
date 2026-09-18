@@ -54,7 +54,7 @@ export default function ApplicationsQueue() {
     <div className="container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h1>Application Queue</h1>
-        <button onClick={handleSignOut} className="btn btn-secondary">Sign out</button>
+        <button onClick={handleSignOut} className="btn btn-secondary" style={{ marginLeft: 'auto' }}>Sign out</button>
       </div>
 
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
