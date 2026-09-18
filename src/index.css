@@ -182,6 +182,14 @@ input::placeholder {
 .mb-4 { margin-bottom: 1rem; }
 .error-text { color: var(--error-color); font-size: 0.875rem; margin-top: 0.25rem; }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Link styling */
 a, .text-link {
   color: var(--accent-color);
