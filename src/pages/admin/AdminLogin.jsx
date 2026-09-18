@@ -10,7 +10,7 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [step, setStep] = useState('email'); // email or otp
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '', '', '']);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
   const { isAdmin, loading: authLoading, signOut, refreshAdminStatus } = useAuth();
@@ -40,13 +40,13 @@ export default function AdminLogin() {
     if (isNaN(value)) return;
     const newOtp = [...otp];
     if (value.length > 1) {
-      const pasted = value.slice(0, 6).split('');
-      for (let i = 0; i < pasted.length; i++) if (index + i < 6) newOtp[index + i] = pasted[i];
+      const pasted = value.slice(0, 8).split('');
+      for (let i = 0; i < pasted.length; i++) if (index + i < 8) newOtp[index + i] = pasted[i];
       setOtp(newOtp);
     } else {
       newOtp[index] = value;
       setOtp(newOtp);
-      if (value !== '' && index < 5) inputRefs.current[index + 1]?.focus();
+      if (value !== '' && index < 7) inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -95,7 +95,7 @@ export default function AdminLogin() {
   };
 
   useEffect(() => {
-    if (step === 'otp' && otp.join('').length === 6 && !loading) {
+    if (step === 'otp' && otp.join('').length === 8 && !loading) {
       verifyOtp();
     }
   }, [otp, step]);
@@ -146,7 +146,7 @@ export default function AdminLogin() {
                   ref={el => inputRefs.current[index] = el}
                   type="text"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={8}
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   disabled={loading}

@@ -21,7 +21,7 @@ export default function AdminRegister() {
 
   const [step, setStep] = useState('email'); // 'email' | 'otp' | 'success'
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const inputRefs = useRef([]);
@@ -55,16 +55,16 @@ export default function AdminRegister() {
     const newOtp = [...otp];
     if (value.length > 1) {
       // Handle paste
-      const pasted = value.slice(0, 6).split('');
+      const pasted = value.slice(0, 8).split('');
       for (let i = 0; i < pasted.length; i++) {
-        if (index + i < 6) newOtp[index + i] = pasted[i];
+        if (index + i < 8) newOtp[index + i] = pasted[i];
       }
       setOtp(newOtp);
-      inputRefs.current[Math.min(index + pasted.length, 5)]?.focus();
+      inputRefs.current[Math.min(index + pasted.length, 7)]?.focus();
     } else {
       newOtp[index] = value;
       setOtp(newOtp);
-      if (value && index < 5) inputRefs.current[index + 1]?.focus();
+      if (value && index < 7) inputRefs.current[index + 1]?.focus();
     }
   };
 
@@ -111,16 +111,16 @@ export default function AdminRegister() {
       setStep('success');
     } catch (err) {
       setError(err.message);
-      setOtp(['', '', '', '', '', '']);
+      setOtp(['', '', '', '', '', '', '', '']);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } finally {
       setLoading(false);
     }
   };
 
-  // Auto-verify when all 6 digits entered
+  // Auto-verify when all 8 digits entered
   useEffect(() => {
-    if (step === 'otp' && otp.join('').length === 6 && !loading) {
+    if (step === 'otp' && otp.join('').length === 8 && !loading) {
       verifyAndRegister();
     }
   }, [otp, step]);
@@ -134,7 +134,7 @@ export default function AdminRegister() {
         <h1 style={{ marginBottom: '0.25rem' }}>Admin Registration</h1>
         <p className="subtitle" style={{ marginBottom: '2rem', fontSize: '0.9rem' }}>
           {step === 'email' && 'Create your admin account. You only need to do this once.'}
-          {step === 'otp' && `Enter the 6-digit code sent to ${email}`}
+          {step === 'otp' && `Enter the 8-digit code sent to ${email}`}
           {step === 'success' && 'Your admin account is ready.'}
         </p>
 
@@ -175,7 +175,7 @@ export default function AdminRegister() {
                   ref={(el) => (inputRefs.current[index] = el)}
                   type="text"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={8}
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
@@ -204,7 +204,7 @@ export default function AdminRegister() {
               type="button"
               className="text-link"
               style={{ fontSize: '0.875rem', width: '100%', textAlign: 'center' }}
-              onClick={() => { setStep('email'); setOtp(['', '', '', '', '', '']); setError(null); }}
+              onClick={() => { setStep('email'); setOtp(['', '', '', '', '', '', '', '']); setError(null); }}
               disabled={loading}
             >
               ← Use a different email
