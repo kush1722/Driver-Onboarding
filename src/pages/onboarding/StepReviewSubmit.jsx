@@ -68,10 +68,29 @@ export default function StepReviewSubmit({ applicationId }) {
     }
   };
 
+  const formatIdType = (type) => {
+    const map = {
+      national_id: 'National ID',
+      passport: 'Passport',
+      drivers_license: 'Driver\'s License'
+    };
+    return map[type] || type;
+  };
+
+  const formatVehicleType = (type) => {
+    const map = {
+      bike: 'Bike',
+      car: 'Car',
+      van: 'Van',
+      truck: 'Truck'
+    };
+    return map[type] || type;
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div>
+    <div style={{ paddingBottom: '2rem' }}>
       <h2 style={{ marginBottom: '0.5rem' }}>Review & Submit</h2>
       <p className="subtitle" style={{ marginBottom: '2rem' }}>Please review your details before submitting.</p>
 
@@ -83,10 +102,19 @@ export default function StepReviewSubmit({ applicationId }) {
               <h3 style={{ fontSize: '1.1rem' }}>Personal Details</h3>
               <button className="text-link" onClick={() => navigate('/onboarding/personal')}>Edit</button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem' }}>
-              <div><span style={{ color: 'var(--text-secondary)' }}>Name:</span> {summary.personal?.full_name}</div>
-              <div><span style={{ color: 'var(--text-secondary)' }}>Phone:</span> {summary.personal?.phone}</div>
-              <div style={{ gridColumn: 'span 2' }}><span style={{ color: 'var(--text-secondary)' }}>Address:</span> {summary.personal?.address}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
+              <div>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Name</div>
+                <div>{summary.personal?.full_name}</div>
+              </div>
+              <div>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Phone</div>
+                <div>{summary.personal?.phone}</div>
+              </div>
+              <div>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Address</div>
+                <div>{summary.personal?.address}</div>
+              </div>
             </div>
           </div>
 
@@ -95,14 +123,20 @@ export default function StepReviewSubmit({ applicationId }) {
               <h3 style={{ fontSize: '1.1rem' }}>Identity</h3>
               <button className="text-link" onClick={() => navigate('/onboarding/identity')}>Edit</button>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem' }}>
-              <div><span style={{ color: 'var(--text-secondary)' }}>Type:</span> {summary.identity?.id_type}</div>
-              <div><span style={{ color: 'var(--text-secondary)' }}>Number:</span> {summary.identity?.id_number}</div>
-              <div style={{ gridColumn: 'span 2' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Face Match:</span>{' '}
-                <span style={{ color: summary.identity?.face_match === 'match' ? 'var(--success-color)' : 'var(--warning-color)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
+              <div>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Type</div>
+                <div>{formatIdType(summary.identity?.id_type)}</div>
+              </div>
+              <div>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Number</div>
+                <div>{summary.identity?.id_number}</div>
+              </div>
+              <div>
+                <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Face Match</div>
+                <div style={{ color: summary.identity?.face_match === 'match' ? 'var(--success-color)' : 'var(--warning-color)' }}>
                   {summary.identity?.face_match === 'match' ? 'Matched' : 'Needs Review'}
-                </span>
+                </div>
               </div>
             </div>
           </div>
@@ -113,11 +147,31 @@ export default function StepReviewSubmit({ applicationId }) {
               <button className="text-link" onClick={() => navigate('/onboarding/vehicle')}>Edit</button>
             </div>
             {summary.vehicle ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.875rem' }}>
-                <div><span style={{ color: 'var(--text-secondary)' }}>Type:</span> {summary.vehicle.type}</div>
-                <div><span style={{ color: 'var(--text-secondary)' }}>Plate:</span> {summary.vehicle.plate_number}</div>
-                <div><span style={{ color: 'var(--text-secondary)' }}>Make/Model:</span> {summary.vehicle.make} {summary.vehicle.model}</div>
-                <div><span style={{ color: 'var(--text-secondary)' }}>Color/Year:</span> {summary.vehicle.color} ({summary.vehicle.year})</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.875rem' }}>
+                <div>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Type</div>
+                  <div>{formatVehicleType(summary.vehicle.type)}</div>
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>License Plate</div>
+                  <div>{summary.vehicle.plate_number}</div>
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Make</div>
+                  <div>{summary.vehicle.make}</div>
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Model</div>
+                  <div>{summary.vehicle.model}</div>
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Year</div>
+                  <div>{summary.vehicle.year}</div>
+                </div>
+                <div>
+                  <div style={{ color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Color</div>
+                  <div>{summary.vehicle.color}</div>
+                </div>
               </div>
             ) : (
               <p style={{ color: 'var(--warning-color)', fontSize: '0.875rem' }}>Missing vehicle details</p>

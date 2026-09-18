@@ -240,7 +240,13 @@ export default function StepIdentityVerification({ applicationId }) {
           </div>
         </div>
 
-        <div style={{ marginTop: '2rem', borderTop: '1px solid var(--surface-border)', paddingTop: '2rem' }}>
+        <div style={{ marginTop: '2rem', paddingTop: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
+             <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '50%', background: 'var(--success-color)', color: '#fff', fontSize: '12px', marginRight: '8px' }}>✓</span>
+             <span style={{ fontSize: '0.875rem' }}>ID Upload</span>
+             <div style={{ flex: 1, height: '1px', background: 'var(--surface-border)', margin: '0 12px' }}></div>
+             <span style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: '500' }}>Step 2: Selfie</span>
+          </div>
           <SelfieCapture 
             applicationId={applicationId} 
             onCaptureSuccess={handleSelfieUpload} 

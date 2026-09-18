@@ -13,48 +13,12 @@ export default function AdminLogin() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
-  const { signOut, refreshAdminStatus } = useAuth();
+  const { isAdmin, loading, signOut, refreshAdminStatus } = useAuth();
 
-  const handleDevBypass = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const bypassEmail = email || 'admin@admin.com';
-    const pwd = 'DevPassword123!';
-    try {
-      let { data, error: signErr } = await supabase.auth.signInWithPassword({ email: bypassEmail, password: pwd });
-      if (signErr) {
-        const upRes = await supabase.auth.signUp({ email: bypassEmail, password: pwd });
-        if (upRes.error) throw upRes.error;
-        data = upRes.data;
-      }
-      
-      const user = data?.user;
-      if (user) {
-         let { data: adminCheck } = await supabase.from('admins').select('id').eq('auth_id', user.id).single();
-         if (!adminCheck && inviteCode === 'TESTER2026') {
-            const res = await fetch('/api/create-admin', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId: user.id, inviteCode })
-            });
-            if (res.ok) {
-              adminCheck = true;
-            }
-         }
-         if (!adminCheck) {
-            await signOut();
-            throw new Error("Access denied. Not an admin or invalid invite code.");
-         }
-         await refreshAdminStatus();
-         window.location.href = '/admin';
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // If already authenticated as admin, skip login page
+  useEffect(() => {
+    if (!loading && isAdmin) navigate('/admin', { replace: true });
+  }, [loading, isAdmin, navigate]);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
@@ -168,14 +132,9 @@ export default function AdminLogin() {
               />
             </div>
             {error && <p className="error-text mb-4">{error}</p>}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading || !email}>
-                {loading ? 'Sending...' : 'Send OTP'}
-              </button>
-              <button type="button" onClick={handleDevBypass} className="btn btn-secondary" style={{ flex: 1, borderColor: 'var(--accent-color)', color: 'var(--accent-color)' }} disabled={loading}>
-                Bypass OTP
-              </button>
-            </div>
+            <button type="submit" className="btn btn-primary btn-full" disabled={loading || !email}>
+              {loading ? 'Sending...' : 'Send One-Time Code'}
+            </button>
           </form>
         ) : (
           <div>

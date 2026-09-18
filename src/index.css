@@ -7,7 +7,7 @@
   --accent-color: #6366F1;
   --accent-hover: #818CF8;
   --text-primary: #F9FAFB;
-  --text-secondary: #9CA3AF;
+  --text-secondary: #D1D5DB;
   --success-color: #10B981;
   --warning-color: #F59E0B;
   --error-color: #EF4444;
@@ -97,6 +97,16 @@ input::placeholder {
   color: #6B7280;
 }
 
+/* Fix browser autofill styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-primary);
+  -webkit-box-shadow: 0 0 0px 1000px #1a1f2e inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -114,7 +124,6 @@ input::placeholder {
 }
 
 .btn:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -123,14 +132,19 @@ input::placeholder {
   color: white;
 }
 
+.btn-primary:disabled {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
 .btn-primary:hover:not(:disabled) {
   background-color: var(--accent-hover);
   transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background-color: transparent;
-  color: var(--text-secondary);
+  background-color: var(--input-bg);
+  color: var(--text-primary);
   border: 1px solid var(--surface-border);
 }
 
@@ -187,6 +201,30 @@ input::placeholder {
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Responsive form row — side-by-side on desktop, stacked on mobile */
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: flex-end;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-row .form-group {
+    margin-bottom: 0;
+  }
 }
 
 @media (max-width: 640px) {
@@ -254,4 +292,9 @@ a, .text-link {
 a:hover, .text-link:hover {
   color: var(--accent-hover);
   text-decoration: underline;
+}
+
+/* Spinner animation — used by SelfieCapture, check cards, and document slots */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

@@ -193,6 +193,18 @@ export default function ApplicationDetail() {
               <div><strong style={{ display: 'block', color: 'var(--text-secondary)' }}>Name</strong> {app.drivers?.emergency_contact_name}</div>
               <div><strong style={{ display: 'block', color: 'var(--text-secondary)' }}>Phone</strong> {app.drivers?.emergency_contact_phone}</div>
             </div>
+
+            <h4 style={{ margin: '1.5rem 0 0.5rem 0', color: 'var(--text-secondary)' }}>Licence Verification</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', fontSize: '0.875rem' }}>
+              <div>
+                <strong style={{ display: 'block', color: 'var(--text-secondary)' }}>OCR (Name/DOB)</strong>
+                <LicenceStatusBadge status={app.licence_ocr_status} />
+              </div>
+              <div>
+                <strong style={{ display: 'block', color: 'var(--text-secondary)' }}>Face Match (Licence→Selfie)</strong>
+                <LicenceStatusBadge status={app.licence_face_match_status} />
+              </div>
+            </div>
           </div>
 
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
@@ -421,5 +433,32 @@ export default function ApplicationDetail() {
         </div>
       )}
     </div>
+  );
+}
+
+function LicenceStatusBadge({ status }) {
+  if (!status) {
+    return <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Not scanned</span>;
+  }
+  const config = {
+    match: { color: 'var(--success-color)', label: '✓ Verified' },
+    no_match: { color: 'var(--error-color)', label: '✗ Failed' },
+    needs_review: { color: 'var(--warning-color)', label: '⚠ Needs Review' },
+  };
+  const c = config[status] || { color: 'var(--text-secondary)', label: status };
+  return (
+    <span style={{
+      display: 'inline-block',
+      marginTop: '0.25rem',
+      padding: '0.2rem 0.6rem',
+      borderRadius: '999px',
+      background: `${c.color}22`,
+      color: c.color,
+      fontSize: '0.78rem',
+      fontWeight: '600',
+      border: `1px solid ${c.color}55`,
+    }}>
+      {c.label}
+    </span>
   );
 }

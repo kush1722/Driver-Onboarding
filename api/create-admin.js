@@ -11,8 +11,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing userId or inviteCode' });
   }
 
-  if (inviteCode !== 'TESTER2026') {
-    return res.status(403).json({ error: 'Invalid invite code' });
+  const validCode = process.env.ADMIN_INVITE_CODE;
+  if (!validCode) {
+    console.error('ADMIN_INVITE_CODE env var is not set');
+    return res.status(500).json({ error: 'Server misconfiguration' });
+  }
+  if (inviteCode !== validCode) {
+    return res.status(403).json({ error: 'Invalid invite link. Please request a new one.' });
   }
 
   try {

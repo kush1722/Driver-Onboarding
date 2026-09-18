@@ -12,6 +12,7 @@ import StatusPending from './pages/StatusPending';
 import DriverDashboard from './pages/DriverDashboard';
 import DriverRejected from './pages/DriverRejected';
 import AdminLogin from './pages/admin/AdminLogin';
+import AdminRegister from './pages/admin/AdminRegister';
 import ApplicationsQueue from './pages/admin/ApplicationsQueue';
 import ApplicationDetail from './pages/admin/ApplicationDetail';
 
@@ -19,14 +20,19 @@ import ApplicationDetail from './pages/admin/ApplicationDetail';
 // Status components are now imported
 // Admin components are now imported
 
-// Route Guard component
-const ProtectedRoute = ({ children, requireAdmin }) => {
+// Route Guard — blocks all protected routes until auth is fully resolved
+const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const { session, loading, isAdmin } = useAuth();
-  
+
+  // Always wait for the admin API check to fully resolve — never flash content
   if (loading) return <div className="auth-container">Loading...</div>;
-  if (!session) return <Navigate to="/signin" />;
-  if (requireAdmin && !isAdmin) return <Navigate to="/" />;
-  
+
+  // No session → go to sign-in
+  if (!session) return <Navigate to="/signin" replace />;
+
+  // Has session but not an admin → go to root (driver flow)
+  if (requireAdmin && !isAdmin) return <Navigate to="/" replace />;
+
   return children;
 };
 
@@ -102,6 +108,8 @@ function App() {
         
         {/* Admin Routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
+        {/* Secret registration link — only works with valid ?token= */}
+        <Route path="/admin/register" element={<AdminRegister />} />
         <Route path="/admin" element={
           <ProtectedRoute requireAdmin={true}>
             <ApplicationsQueue />

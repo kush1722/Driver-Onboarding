@@ -147,7 +147,7 @@ export default function StepPersonalDetails({ applicationId }) {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div>
+    <div style={{ paddingBottom: '3rem' }}>
       <h2 style={{ marginBottom: '0.5rem' }}>Personal Details</h2>
       <p className="subtitle" style={{ marginBottom: '2rem' }}>Tell us a bit about yourself.</p>
 
@@ -157,12 +157,12 @@ export default function StepPersonalDetails({ applicationId }) {
           <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} onBlur={handleBlur} required />
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+        <div className="form-row">
+          <div className="form-group">
             <label>Date of Birth</label>
             <input type="date" name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} onBlur={handleBlur} required />
           </div>
-          <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+          <div className="form-group">
             <label>Phone Number</label>
             <input type="tel" name="phone" value={formData.phone} onChange={handleChange} onBlur={handleBlur} required />
           </div>
@@ -175,13 +175,13 @@ export default function StepPersonalDetails({ applicationId }) {
 
         <div style={{ marginTop: '2rem', marginBottom: '1.5rem', borderTop: '1px solid var(--surface-border)', paddingTop: '1.5rem' }}>
           <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Emergency Contact</h3>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <div className="form-group" style={{ flex: 1 }}>
+          <div className="form-row">
+            <div className="form-group">
               <label>Name</label>
               <input type="text" name="emergency_contact_name" value={formData.emergency_contact_name} onChange={handleChange} onBlur={handleBlur} required />
             </div>
-            <div className="form-group" style={{ flex: 1 }}>
-              <label>Phone</label>
+            <div className="form-group">
+              <label>Phone Number</label>
               <input type="tel" name="emergency_contact_phone" value={formData.emergency_contact_phone} onChange={handleChange} onBlur={handleBlur} required />
             </div>
           </div>
