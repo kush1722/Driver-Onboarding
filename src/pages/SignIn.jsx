@@ -16,13 +16,17 @@ export default function SignIn() {
   const [timeLeft, setTimeLeft] = useState('');
 
   const navigate = useNavigate();
-  const { session } = useAuth();
+  const { session, loading: authLoading, isAdmin } = useAuth();
 
   useEffect(() => {
-    if (session) {
-      navigate('/');
+    if (session && !authLoading) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     }
-  }, [session, navigate]);
+  }, [session, isAdmin, authLoading, navigate]);
 
   // Load expiry from localStorage on mount
   useEffect(() => {

@@ -36,9 +36,8 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   return children;
 };
 
-// Driver Router component to handle routing based on application status
 const DriverRouter = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [appStatus, setAppStatus] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -76,7 +75,7 @@ const DriverRouter = () => {
     fetchStatus();
   }, [user]);
 
-  if (loading) return <div className="auth-container">Loading...</div>;
+  if (loading || authLoading) return <div className="auth-container">Loading...</div>;
 
   // If they are an admin, always redirect to admin dashboard
   if (isAdmin) return <Navigate to="/admin" />;
