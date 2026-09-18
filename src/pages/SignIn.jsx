@@ -233,6 +233,17 @@ export default function SignIn() {
               <strong>Testing Notice:</strong> Because this app uses a free-tier database, we are limited to sending a few emails per hour. The system has automatically unlocked a bypass for you to continue testing without needing an email.
             </p>
           )}
+
+          <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+            <button 
+              type="button" 
+              className="text-link" 
+              onClick={() => navigate('/otp-verify')}
+              style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}
+            >
+              Already have a verification code?
+            </button>
+          </div>
         </div>
       </div>
     </div>

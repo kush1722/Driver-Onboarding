@@ -5,9 +5,10 @@ import { supabase } from '../lib/supabaseClient';
 export default function OtpVerify() {
   const location = useLocation();
   const navigate = useNavigate();
-  const email = location.state?.email;
+  const initialEmail = location.state?.email || '';
   const fullName = location.state?.fullName;
   
+  const [email, setEmail] = useState(initialEmail);
   const [otp, setOtp] = useState(['', '', '', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,11 +16,8 @@ export default function OtpVerify() {
   const inputRefs = useRef([]);
 
   useEffect(() => {
-    if (!email) {
-      navigate('/signin');
-      return;
-    }
-
+    // We no longer kick them out if there's no email. 
+    // They can manually enter it if they lost their session!
     const timer = setInterval(() => {
       setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
@@ -58,6 +56,9 @@ export default function OtpVerify() {
   };
 
   const verifyCode = async (codeStr) => {
+    if (!email) {
+      return setError("Please enter your email address above first.");
+    }
     setLoading(true);
     setError(null);
     try {
@@ -104,6 +105,7 @@ export default function OtpVerify() {
 
   const handleResend = async () => {
     if (countdown > 0) return;
+    if (!email) return setError("Please enter your email address to request a code.");
     
     setLoading(true);
     try {
@@ -127,10 +129,25 @@ export default function OtpVerify() {
     <div className="auth-container">
       <div className="glass-panel auth-card">
         <h1>Check your email</h1>
-        <p className="subtitle">
-          We sent an 8-digit verification code to<br/>
-          <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>
-        </p>
+        
+        {!initialEmail ? (
+          <div className="form-group" style={{ textAlign: 'left', marginBottom: '2rem' }}>
+            <label>Confirm your Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+              required
+              style={{ width: '100%' }}
+            />
+          </div>
+        ) : (
+          <p className="subtitle">
+            We sent an 8-digit verification code to<br/>
+            <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>
+          </p>
+        )}
 
         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '2rem' }}>
           {otp.map((digit, index) => (
