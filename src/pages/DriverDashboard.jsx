@@ -42,7 +42,7 @@ export default function DriverDashboard() {
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h2>Welcome back, {driver.full_name?.split(' ')[0]}</h2>
-        <button onClick={signOut} className="btn btn-secondary">Sign out</button>
+        <button onClick={signOut} className="btn btn-secondary" style={{ marginLeft: 'auto' }}>Sign out</button>
       </div>
 
       <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
@@ -56,7 +56,7 @@ export default function DriverDashboard() {
         
         <button 
           className={`btn ${isOnline ? 'btn-secondary' : 'btn-primary'}`} 
-          style={{ padding: '1rem 2rem', fontSize: '1.2rem', gap: '0.5rem' }}
+          style={{ padding: '1rem 2rem', fontSize: '1.2rem', gap: '0.5rem', flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}
           onClick={() => setIsOnline(!isOnline)}
         >
           <Power size={24} />
