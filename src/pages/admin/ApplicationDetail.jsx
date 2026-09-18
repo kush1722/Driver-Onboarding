@@ -16,6 +16,8 @@ export default function ApplicationDetail() {
   const [images, setImages] = useState({}); // Pre-fetched signed URLs
   const [deletePromptOpen, setDeletePromptOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [confirmApprove, setConfirmApprove] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export default function ApplicationDetail() {
   };
 
   const handleApprove = async () => {
-    if (!window.confirm('Are you sure you want to approve this application?')) return;
+    setActionError('');
     setActionLoading(true);
     try {
       await supabase.from('applications').update({
@@ -83,15 +85,17 @@ export default function ApplicationDetail() {
       navigate('/admin');
     } catch (err) {
       console.error(err);
-      alert('Failed to approve');
+      setActionError('Failed to approve the application.');
     } finally {
       setActionLoading(false);
+      setConfirmApprove(false);
     }
   };
 
   const handleReject = async () => {
+    setActionError('');
     if (!rejectionReason.trim()) {
-      alert("Please provide a rejection reason.");
+      setActionError("Please provide a rejection reason.");
       return;
     }
     setActionLoading(true);
@@ -119,15 +123,16 @@ export default function ApplicationDetail() {
       navigate('/admin');
     } catch (err) {
       console.error(err);
-      alert('Failed to reject');
+      setActionError('Failed to reject the application.');
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleDelete = async () => {
+    setActionError('');
     if (deleteConfirmText.toLowerCase() !== 'delete') {
-      alert('Please type DELETE to confirm.');
+      setActionError('Please type DELETE to confirm.');
       return;
     }
     
@@ -147,7 +152,7 @@ export default function ApplicationDetail() {
       navigate('/admin');
     } catch (err) {
       console.error(err);
-      alert('Error: ' + err.message);
+      setActionError('Error: ' + err.message);
     } finally {
       setActionLoading(false);
     }
@@ -288,6 +293,12 @@ export default function ApplicationDetail() {
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
             <h3 style={{ marginBottom: '1rem' }}>Review Decision</h3>
             
+            {actionError && (
+              <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(255,100,100,0.1)', color: 'var(--error-color)', borderRadius: '8px', fontSize: '0.875rem' }}>
+                {actionError}
+              </div>
+            )}
+
             {app.status === 'approved' || app.status === 'rejected' ? (
               <div style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>
                 Decision already made: <strong style={{ color: app.status === 'approved' ? 'var(--success-color)' : 'var(--error-color)', textTransform: 'capitalize' }}>{app.status}</strong>
@@ -297,9 +308,25 @@ export default function ApplicationDetail() {
               <div>
                 {!rejecting ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <button onClick={handleApprove} className="btn btn-primary" style={{ background: 'var(--success-color)' }} disabled={actionLoading}>
-                      <Check size={18} /> Approve Application
-                    </button>
+                    
+                    {!confirmApprove ? (
+                      <button onClick={() => setConfirmApprove(true)} className="btn btn-primary" style={{ background: 'var(--success-color)' }} disabled={actionLoading}>
+                        <Check size={18} /> Approve Application
+                      </button>
+                    ) : (
+                      <div style={{ padding: '1rem', background: 'rgba(16,185,129,0.1)', borderRadius: '8px', border: '1px solid var(--success-color)' }}>
+                        <p style={{ color: 'var(--success-color)', marginBottom: '1rem', fontWeight: 'bold' }}>Confirm Approval?</p>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button onClick={handleApprove} className="btn" style={{ flex: 1, background: 'var(--success-color)', color: 'white' }} disabled={actionLoading}>
+                            Yes, Approve
+                          </button>
+                          <button onClick={() => setConfirmApprove(false)} className="btn btn-secondary" style={{ flex: 1 }} disabled={actionLoading}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     <button onClick={() => setRejecting(true)} className="btn btn-secondary" style={{ color: 'var(--error-color)', borderColor: 'var(--error-color)' }} disabled={actionLoading}>
                       <X size={18} /> Reject Application
                     </button>
