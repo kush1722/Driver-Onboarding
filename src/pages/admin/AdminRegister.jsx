@@ -181,9 +181,10 @@ export default function AdminRegister() {
                   onKeyDown={(e) => handleOtpKeyDown(index, e)}
                   disabled={loading}
                   style={{
-                    width: '3rem', height: '3.5rem',
+                    width: 'clamp(1.5rem, 8vw, 2.5rem)',
+                    height: 'clamp(2.5rem, 12vw, 3.5rem)',
                     textAlign: 'center',
-                    fontSize: '1.5rem',
+                    fontSize: 'clamp(1.2rem, 5vw, 1.5rem)',
                     fontWeight: '700',
                     padding: '0',
                     borderColor: digit ? 'var(--accent-color)' : undefined,
@@ -215,15 +216,6 @@ export default function AdminRegister() {
         {/* ── Step: Success ── */}
         {step === 'success' && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{
-              width: '56px', height: '56px', borderRadius: '50%',
-              background: 'rgba(16,185,129,0.15)',
-              border: '1px solid var(--success-color)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 1.5rem',
-            }}>
-              <ShieldCheck size={28} color="var(--success-color)" />
-            </div>
             <p style={{ color: 'var(--text-primary)', marginBottom: '0.5rem', fontWeight: '600' }}>
               Account created successfully!
             </p>

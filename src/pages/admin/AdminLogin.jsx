@@ -150,7 +150,14 @@ export default function AdminLogin() {
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   disabled={loading}
-                  style={{ width: '3rem', height: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontWeight: '600', padding: '0' }}
+                  style={{ 
+                    width: 'clamp(1.5rem, 8vw, 2.5rem)', 
+                    height: 'clamp(2.5rem, 12vw, 3.5rem)', 
+                    textAlign: 'center', 
+                    fontSize: 'clamp(1.2rem, 5vw, 1.5rem)', 
+                    fontWeight: '600', 
+                    padding: '0' 
+                  }}
                 />
               ))}
             </div>
