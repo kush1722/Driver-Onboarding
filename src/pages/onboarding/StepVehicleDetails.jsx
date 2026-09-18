@@ -148,21 +148,7 @@ export default function StepVehicleDetails({ applicationId }) {
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
           <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
             <label>Make</label>
-            <select name="make" value={formData.make} onChange={handleChange} onBlur={handleBlur} required>
-              <option value="" disabled>Select Make...</option>
-              <option value="Toyota">Toyota</option>
-              <option value="Honda">Honda</option>
-              <option value="Ford">Ford</option>
-              <option value="Nissan">Nissan</option>
-              <option value="Chevrolet">Chevrolet</option>
-              <option value="Hyundai">Hyundai</option>
-              <option value="Kia">Kia</option>
-              <option value="Mercedes-Benz">Mercedes-Benz</option>
-              <option value="BMW">BMW</option>
-              <option value="Audi">Audi</option>
-              <option value="Volkswagen">Volkswagen</option>
-              <option value="Other">Other</option>
-            </select>
+            <input type="text" name="make" placeholder="e.g. Toyota" value={formData.make} onChange={handleChange} onBlur={handleBlur} required />
           </div>
           <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
             <label>Model</label>
