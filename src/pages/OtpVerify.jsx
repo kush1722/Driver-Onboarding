@@ -157,6 +157,15 @@ export default function OtpVerify() {
 
         {error && <p className="error-text mb-4">{error}</p>}
 
+        <button 
+          className="btn btn-primary" 
+          style={{ width: '100%', marginBottom: '1.5rem', height: '3rem', fontSize: '1.1rem' }}
+          onClick={() => verifyCode(otp.join(''))}
+          disabled={loading || otp.join('').length !== 8}
+        >
+          {loading ? 'Verifying...' : 'Verify Code'}
+        </button>
+
         <div style={{ marginTop: '1rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           {countdown > 0 ? (
             <p>Resend code in {formatTime(countdown)}</p>
