@@ -38,12 +38,33 @@ export default function DocumentUploadSlot({
       console.warn("Compression failed, using original", err);
     }
 
-    // Create local preview if it's an image
+    // Create local preview and compress it for OCR (Vercel payload limit is 4.5MB)
     let dataUrlPreview = null;
     if (fileToUpload.type.startsWith('image/')) {
+      // Use Canvas to guarantee the base64 string is small enough for the OCR API
       dataUrlPreview = await new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1024;
+            let width = img.width;
+            let height = img.height;
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            // 0.7 quality ensures tiny base64 payload for Vercel OCR
+            resolve(canvas.toDataURL('image/jpeg', 0.7)); 
+          };
+          img.onerror = () => resolve(event.target.result); // fallback if canvas fails
+          img.src = event.target.result;
+        };
         reader.readAsDataURL(fileToUpload);
       });
       setPreviewUrl(dataUrlPreview);
