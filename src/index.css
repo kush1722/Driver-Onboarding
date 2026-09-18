@@ -181,13 +181,51 @@ input::placeholder {
 .mt-4 { margin-top: 1rem; }
 .mb-4 { margin-bottom: 1rem; }
 .error-text { color: var(--error-color); font-size: 0.875rem; margin-top: 0.25rem; }
-
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+@media (max-width: 640px) {
+  .responsive-table thead {
+    display: none;
+  }
+  .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+  .responsive-table tr {
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--surface-border) !important;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+  }
+  .responsive-table td {
+    padding: 0.75rem 0 !important;
+    text-align: right !important;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .responsive-table td:last-child {
+    border-bottom: none !important;
+  }
+  .responsive-table td::before {
+    content: attr(data-label);
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-align: left;
+  }
+  .table-fade {
+    display: none !important;
+  }
 }
 
 /* Link styling */
