@@ -131,18 +131,6 @@ export default function AdminRegister() {
     <div className="auth-container">
       <div className="glass-panel auth-card" style={{ maxWidth: '420px' }}>
 
-        {/* Icon + header */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-          <div style={{
-            width: '64px', height: '64px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.3), rgba(16,185,129,0.2))',
-            border: '1px solid rgba(99,102,241,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <ShieldCheck size={30} color="var(--accent-color)" />
-          </div>
-        </div>
-
         <h1 style={{ marginBottom: '0.25rem' }}>Admin Registration</h1>
         <p className="subtitle" style={{ marginBottom: '2rem', fontSize: '0.9rem' }}>
           {step === 'email' && 'Create your admin account. You only need to do this once.'}
@@ -174,12 +162,6 @@ export default function AdminRegister() {
                 </span>
               )}
             </button>
-
-            <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-              After registration you'll sign in at{' '}
-              <a href="/admin/login" style={{ color: 'var(--accent-color)' }}>/admin/login</a>{' '}
-              using the same email and a one-time code.
-            </p>
           </form>
         )}
 
@@ -246,13 +228,13 @@ export default function AdminRegister() {
               Account created successfully!
             </p>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '2rem', lineHeight: '1.5' }}>
-              You can now sign in to the admin panel using your email. A new one-time code will be sent each time you log in.
+              You can now sign in using your email. The system will recognize your admin status automatically.
             </p>
             <button
               className="btn btn-primary btn-full"
-              onClick={() => navigate('/admin/login', { replace: true })}
+              onClick={() => navigate('/signin', { replace: true })}
             >
-              <ArrowRight size={17} /> Go to Admin Login
+              <ArrowRight size={17} /> Go to Sign In
             </button>
           </div>
         )}
