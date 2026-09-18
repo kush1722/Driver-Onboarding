@@ -52,12 +52,12 @@ export default function ApplicationsQueue() {
 
   return (
     <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
         <h1>Application Queue</h1>
         <button onClick={handleSignOut} className="btn btn-secondary">Sign out</button>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         {['all', 'submitted', 'under_review', 'approved', 'rejected'].map(f => (
           <button 
             key={f}
@@ -77,8 +77,8 @@ export default function ApplicationsQueue() {
         ))}
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+      <div className="glass-panel" style={{ overflowX: 'auto', padding: 0 }}>
+        <table style={{ width: '100%', minWidth: '600px', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--surface-border)', background: 'rgba(0,0,0,0.2)' }}>
               <th style={{ padding: '1rem' }}>Driver Name</th>
