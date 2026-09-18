@@ -84,10 +84,12 @@ export default function OtpVerify() {
           ]);
         }
         
-        // Navigation will be handled by App.jsx routing based on session
+        // Force immediate navigation so the user never gets stuck!
+        navigate('/');
       }
     } catch (err) {
-      setError(err.message || 'Invalid or expired code.');
+      // Show the exact, specific error from Supabase
+      setError(err.message || 'The code you entered is invalid or has expired.');
     } finally {
       setLoading(false);
     }
