@@ -13,12 +13,13 @@ export default function AdminLogin() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef([]);
   const navigate = useNavigate();
-  const { isAdmin, loading, signOut, refreshAdminStatus } = useAuth();
+  const { isAdmin, loading: authLoading, signOut, refreshAdminStatus } = useAuth();
 
   // If already authenticated as admin, skip login page
   useEffect(() => {
-    if (!loading && isAdmin) navigate('/admin', { replace: true });
-  }, [loading, isAdmin, navigate]);
+    if (!authLoading && isAdmin) navigate('/admin', { replace: true });
+  }, [authLoading, isAdmin, navigate]);
+
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
