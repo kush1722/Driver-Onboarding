@@ -18,6 +18,7 @@ export default function ApplicationDetail() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [actionError, setActionError] = useState('');
   const [confirmApprove, setConfirmApprove] = useState(false);
+  const [imagesLoading, setImagesLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -47,16 +48,23 @@ export default function ApplicationDetail() {
         await Promise.all(data.documents.map(async (doc) => {
           try {
             const { data: urlData } = await supabase.storage.from('driver-documents').createSignedUrl(doc.file_url, 3600);
-            if (urlData) urls[doc.type] = urlData.signedUrl;
+            if (urlData?.signedUrl) {
+              urls[doc.type] = urlData.signedUrl;
+            } else {
+              urls[doc.type] = 'error';
+            }
           } catch (e) {
             console.error("Failed to load image URL", e);
+            urls[doc.type] = 'error';
           }
         }));
         setImages(urls);
       }
+      setImagesLoading(false);
     } catch (err) {
       console.error(err);
       setLoading(false);
+      setImagesLoading(false);
     }
   };
 
@@ -229,14 +237,16 @@ export default function ApplicationDetail() {
                   <strong style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'capitalize' }}>
                     {type.replace('_', ' ')}
                   </strong>
-                  {images[type] ? (
+                  {images[type] && images[type] !== 'error' ? (
                     <a href={images[type]} target="_blank" rel="noreferrer">
                       <img src={images[type]} alt={type} style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--surface-border)' }} />
                     </a>
-                  ) : app.documents?.some(d => d.type === type) ? (
+                  ) : imagesLoading ? (
                     <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
                        <span className="spinner" style={{ display: 'inline-block', width: '16px', height: '16px', border: '2px solid', borderRightColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></span>
                     </div>
+                  ) : images[type] === 'error' ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(239,68,68,0.1)', color: 'var(--error-color)', borderRadius: '8px' }}>File Corrupted</div>
                   ) : (
                     <div style={{ padding: '2rem', textAlign: 'center', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>Missing</div>
                   )}
@@ -261,18 +271,22 @@ export default function ApplicationDetail() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <strong style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>ID Front</strong>
-                {images.id_front ? (
+                {images.id_front && images.id_front !== 'error' ? (
                   <a href={images.id_front} target="_blank" rel="noreferrer"><img src={images.id_front} alt="ID Front" style={{ width: '100%', borderRadius: '8px' }} /></a>
-                ) : app.documents?.some(d => d.type === 'id_front') ? (
+                ) : imagesLoading ? (
                   <div style={{ padding: '1rem', textAlign: 'center' }}>Loading...</div>
+                ) : images.id_front === 'error' ? (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--error-color)' }}>Error</div>
                 ) : <div>Missing</div>}
               </div>
               <div>
                 <strong style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Selfie Capture</strong>
-                {images.selfie ? (
+                {images.selfie && images.selfie !== 'error' ? (
                   <a href={images.selfie} target="_blank" rel="noreferrer"><img src={images.selfie} alt="Selfie" style={{ width: '100%', borderRadius: '8px' }} /></a>
-                ) : app.documents?.some(d => d.type === 'selfie') ? (
+                ) : imagesLoading ? (
                   <div style={{ padding: '1rem', textAlign: 'center' }}>Loading...</div>
+                ) : images.selfie === 'error' ? (
+                  <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--error-color)' }}>Error</div>
                 ) : <div>Missing</div>}
               </div>
             </div>
