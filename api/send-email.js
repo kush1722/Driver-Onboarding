@@ -24,6 +24,8 @@ export default async function handler(req, res) {
     let subject = '';
     let htmlContent = '';
 
+    const baseUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173';
+
     if (status === 'approved') {
       subject = '🎉 You are approved to drive!';
       htmlContent = `
@@ -31,7 +33,7 @@ export default async function handler(req, res) {
           <h2>Congratulations, ${name || 'Driver'}!</h2>
           <p>Your application has been reviewed and <strong>approved</strong>.</p>
           <p>You can now log in to the driver portal and start accepting rides!</p>
-          <a href="http://localhost:5173/dashboard" style="display: inline-block; padding: 10px 20px; background-color: #10B981; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">Go to Dashboard</a>
+          <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 10px 20px; background-color: #10B981; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">Go to Dashboard</a>
         </div>
       `;
     } else if (status === 'rejected') {
