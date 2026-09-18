@@ -183,6 +183,17 @@ export default function OtpVerify() {
             </p>
           )}
         </div>
+
+        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+          <button 
+            type="button" 
+            className="text-link" 
+            onClick={() => navigate('/signin')}
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            ← Back to Sign In
+          </button>
+        </div>
       </div>
     </div>
   );
