@@ -223,6 +223,11 @@ input::placeholder {
     font-size: 0.85rem;
     text-align: left;
   }
+  .responsive-table td.empty-state-cell {
+    display: block !important;
+    text-align: center !important;
+    padding: 2rem !important;
+  }
   .table-fade {
     display: none !important;
   }

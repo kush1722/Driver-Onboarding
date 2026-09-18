@@ -91,9 +91,9 @@ export default function ApplicationsQueue() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan="4" style={{ padding: '2rem', textAlign: 'center' }}>Loading...</td></tr>
+              <tr><td colSpan="4" className="empty-state-cell" style={{ padding: '2rem', textAlign: 'center' }}>Loading...</td></tr>
             ) : filteredApps.length === 0 ? (
-              <tr><td colSpan="4" style={{ padding: '2rem', textAlign: 'center' }}>No applications found.</td></tr>
+              <tr><td colSpan="4" className="empty-state-cell" style={{ padding: '2rem', textAlign: 'center' }}>No applications found.</td></tr>
             ) : (
               filteredApps.map(app => (
                 <tr 
