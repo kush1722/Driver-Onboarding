@@ -99,7 +99,10 @@ export default function OnboardingLayout() {
   }, [user, navigate, location.pathname]);
 
   if (loading) {
-    return <div className="auth-container">Loading application...</div>;
+    return <div className="auth-container" style={{ padding: '2rem', textAlign: 'center' }}>Loading application... (AppID: {applicationId || 'null'})</div>;
+  }
+  if (!applicationId) {
+    return <div className="auth-container" style={{color:'red'}}>Error: Could not load your application ID. Please contact support.</div>;
   }
 
   return (

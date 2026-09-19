@@ -144,7 +144,7 @@ export default function StepPersonalDetails({ applicationId }) {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div style={{padding:'2rem', textAlign:'center'}}>Loading... (AppID: {applicationId || 'null'})</div>;
 
   return (
     <div style={{ paddingBottom: '3rem' }}>
