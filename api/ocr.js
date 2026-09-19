@@ -49,7 +49,11 @@ export default async function handler(req, res) {
                     { text: prompt }
                 ]
             }
-        ]
+        ],
+        config: {
+            temperature: 0.0,
+            responseMimeType: "application/json"
+        }
     });
 
     const textResponse = response.text;
