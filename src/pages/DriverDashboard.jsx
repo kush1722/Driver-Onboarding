@@ -2,11 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle, Power } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
-import useLogoutOnBack from '../hooks/useLogoutOnBack';
 
 export default function DriverDashboard() {
   const { user, signOut } = useAuth();
-  useLogoutOnBack();
   const [driver, setDriver] = useState(null);
   const [vehicle, setVehicle] = useState(null);
   const [isOnline, setIsOnline] = useState(false);
