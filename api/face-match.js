@@ -47,6 +47,10 @@ export default async function handler(req, res) {
 
     const response = await ai.models.generateContent({
         model: 'gemini-3.6-flash',
+        config: {
+          temperature: 0.0,
+          responseMimeType: "application/json",
+        },
         contents: [
             {
                 role: 'user',
