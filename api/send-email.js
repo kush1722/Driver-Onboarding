@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -28,12 +29,34 @@ export default async function handler(req, res) {
 
     if (status === 'approved') {
       subject = '🎉 You are approved to drive!';
+      
+      let actionLink = `${baseUrl}/dashboard`;
+      try {
+        const supabaseUrl = process.env.VITE_SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (supabaseUrl && supabaseKey) {
+          const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
+          const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'magiclink',
+            email: email,
+            options: {
+              redirectTo: `${baseUrl}/dashboard`
+            }
+          });
+          if (linkData?.properties?.action_link) {
+            actionLink = linkData.properties.action_link;
+          }
+        }
+      } catch (e) {
+        console.error("Magic link generation failed:", e);
+      }
+
       htmlContent = `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2>Congratulations, ${name || 'Driver'}!</h2>
           <p>Your application has been reviewed and <strong>approved</strong>.</p>
           <p>You can now log in to the driver portal and start accepting rides!</p>
-          <a href="${baseUrl}/dashboard" style="display: inline-block; padding: 10px 20px; background-color: #10B981; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">Go to Dashboard</a>
+          <a href="${actionLink}" style="display: inline-block; padding: 10px 20px; background-color: #10B981; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">Go to Dashboard</a>
         </div>
       `;
     } else if (status === 'rejected') {
