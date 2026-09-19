@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }) => {
     // If a check is already in flight for this same user, skip
     if (checkInFlightRef.current) return;
     checkInFlightRef.current = true;
+    setLoading(true);
 
     try {
       const res = await fetch(`/api/check-admin?userId=${userId}`);
