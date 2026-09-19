@@ -133,7 +133,7 @@ export default function SignIn() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: true,
+          shouldCreateUser: isSignUp,
         },
       });
 
@@ -147,6 +147,8 @@ export default function SignIn() {
         setRateLimitExpiry(expiry);
         localStorage.setItem('authRateLimitExpiry', expiry.toString());
         setError("Supabase free tier rate limit reached. Please use the Bypass button.");
+      } else if (msg.toLowerCase().includes('signups not allowed')) {
+        setError("Account not found. Please switch to 'Sign Up' to create an account.");
       } else {
         setError(msg || 'An error occurred during sign in');
       }
