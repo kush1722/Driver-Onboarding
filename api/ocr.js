@@ -27,14 +27,15 @@ export default async function handler(req, res) {
       You are an expert identity document validator.
       I am providing an image of an ID document.
       The user claims their full name is "${fullName}" and their date of birth is "${dateOfBirth || 'Unknown'}".
-      Carefully extract the name and date of birth from the document.
-      Do they match the user's claims? 
+      Carefully extract the name, date of birth, and the unique ID number (e.g. document number, license number, or national ID number) from the document.
+      Do the name and DOB match the user's claims? 
       Be reasonably lenient with OCR typos, name order, or date formats (e.g. 01/12/90 matches Dec 1st 1990).
       Return ONLY a JSON object with the following exact structure, with no markdown formatting:
       {
         "isMatch": true or false,
         "extractedName": "The name you found on the ID",
-        "extractedDob": "The DOB you found on the ID"
+        "extractedDob": "The DOB you found on the ID",
+        "extractedIdNumber": "The ID number you found on the document (or null if not found)"
       }
     `;
 

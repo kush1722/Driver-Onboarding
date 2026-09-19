@@ -25,6 +25,7 @@ export default function StepIdentityVerification({ applicationId }) {
   const [driverDetails, setDriverDetails] = useState(null);
   const [ocrStatus, setOcrStatus] = useState(null); // 'scanning', 'match', 'no_match'
   const [ocrFeedback, setOcrFeedback] = useState('');
+  const [ocrCompleted, setOcrCompleted] = useState(false);
 
   useEffect(() => {
     if (!applicationId) return;
@@ -71,7 +72,8 @@ export default function StepIdentityVerification({ applicationId }) {
     // Trigger OCR Scan
     if (driverDetails && driverDetails.full_name) {
       setOcrStatus('scanning');
-      setOcrFeedback('Scanning ID for Name and Date of Birth...');
+      setOcrFeedback('Scanning ID for Name, DOB, and ID Number...');
+      setOcrCompleted(false);
       try {
         const result = await verifyIdWithGemini(preview, driverDetails.full_name, driverDetails.date_of_birth);
         
@@ -82,8 +84,14 @@ export default function StepIdentityVerification({ applicationId }) {
           setOcrFeedback('ID details verified automatically!');
         } else {
           setOcrStatus('no_match');
-          setOcrFeedback('We could not automatically read your exact Name and DOB from the ID. A reviewer will verify this manually.');
+          setOcrFeedback('We could not automatically verify all details. A reviewer will check this manually.');
         }
+
+        if (result.extractedIdNumber) {
+          setIdNumber(result.extractedIdNumber);
+          handleBlur({ target: { value: result.extractedIdNumber } }, result.extractedIdNumber);
+        }
+        setOcrCompleted(true);
         
         // Save to DB
         await supabase.from('applications').update({ ocr_match_status: newOcrStatus }).eq('id', applicationId);
@@ -91,6 +99,7 @@ export default function StepIdentityVerification({ applicationId }) {
         console.error(err);
         setOcrStatus('no_match');
         setOcrFeedback('OCR Scan failed. A reviewer will verify this manually.');
+        setOcrCompleted(true);
       }
     }
   };
@@ -145,11 +154,12 @@ export default function StepIdentityVerification({ applicationId }) {
     }).eq('id', applicationId);
   };
 
-  const handleBlur = async () => {
-    if (!idNumber) return;
+  const handleBlur = async (e, forcedValue) => {
+    const valueToSave = forcedValue || idNumber;
+    if (!valueToSave) return;
     await supabase.from('applications').update({
       id_type: idType,
-      id_number: idNumber
+      id_number: valueToSave
     }).eq('id', applicationId);
   };
 
@@ -202,7 +212,20 @@ export default function StepIdentityVerification({ applicationId }) {
           </div>
           <div className="form-group" style={{ flex: 2, marginBottom: 0 }}>
             <label>ID Number</label>
-            <input type="text" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} onBlur={handleBlur} required />
+            <input 
+              type="text" 
+              value={idNumber} 
+              onChange={(e) => setIdNumber(e.target.value)} 
+              onBlur={(e) => handleBlur(e)} 
+              disabled={!ocrCompleted && !idNumber} // Disabled until OCR finishes OR if already populated from a previous session
+              placeholder={!ocrCompleted && !idNumber ? "Please upload your ID first..." : ""}
+              required 
+            />
+            {ocrCompleted && (
+              <p style={{ fontSize: '0.75rem', color: 'var(--accent-color)', marginTop: '0.5rem', fontWeight: '500' }}>
+                ↑ Please verify the extracted ID number is correct.
+              </p>
+            )}
           </div>
         </div>
 
