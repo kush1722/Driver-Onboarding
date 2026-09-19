@@ -432,41 +432,42 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
               )}
             </div>
 
-            {/* ── Manual capture button ── */}
             <div style={{
-              position: 'absolute', bottom: '4.5rem', right: '1rem',
+              position: 'absolute', bottom: '1.5rem', right: '1.5rem',
               display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end',
             }}>
               <button
                 type="button"
                 onClick={handleCapture}
                 style={{
-                  width: '56px', height: '56px',
+                  width: '64px', height: '64px',
                   borderRadius: '50%',
                   border: '3px solid white',
                   background: 'rgba(255,255,255,0.15)',
                   backdropFilter: 'blur(6px)',
                   cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
                   transition: 'transform 0.1s ease',
                 }}
                 onMouseDown={e => e.currentTarget.style.transform = 'scale(0.93)'}
                 onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'white' }} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setCameraMode(false)}
-                style={{
-                  fontSize: '0.7rem', color: 'rgba(255,255,255,0.7)',
-                  background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
-                }}
-              >
-                Upload instead
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'white' }} />
               </button>
             </div>
+          </div>
+          <div style={{ padding: '1rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)' }}>
+            <button
+              type="button"
+              onClick={() => setCameraMode(false)}
+              style={{
+                fontSize: '0.85rem', color: 'var(--text-secondary)',
+                background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
+              }}
+            >
+              Having camera trouble? Upload a photo instead
+            </button>
           </div>
         ) : (
           // ── File upload fallback ──────────────────────────────────────────
