@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
+import useLogoutOnBack from '../hooks/useLogoutOnBack';
 
 export default function StatusPending() {
   const { user, signOut } = useAuth();
+  useLogoutOnBack();
   const [appId, setAppId] = useState(null);
 
   useEffect(() => {

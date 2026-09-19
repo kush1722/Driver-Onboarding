@@ -1,9 +1,11 @@
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useLogoutOnBack from '../hooks/useLogoutOnBack';
 
 export default function StatusComplete() {
   const navigate = useNavigate();
+  useLogoutOnBack();
 
   return (
     <div className="auth-container">
