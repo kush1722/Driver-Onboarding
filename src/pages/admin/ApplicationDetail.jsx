@@ -232,7 +232,7 @@ export default function ApplicationDetail() {
           <div className="glass-panel" style={{ padding: '1.5rem' }}>
             <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem' }}>Documents</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              {['license_front', 'license_back'].map(type => (
+              {['license_front', 'license_back', 'vehicle_registration', 'vehicle_insurance'].map(type => (
                 <div key={type}>
                   <strong style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '0.5rem', textTransform: 'capitalize' }}>
                     {type.replace('_', ' ')}

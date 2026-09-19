@@ -30,6 +30,8 @@ export default function StepDocuments({ applicationId }) {
   // Upload state
   const [frontUploaded, setFrontUploaded] = useState(false);
   const [backUploaded, setBackUploaded] = useState(false);
+  const [regUploaded, setRegUploaded] = useState(false);
+  const [insUploaded, setInsUploaded] = useState(false);
   // Incrementing this key forces DocumentUploadSlot to remount (reset)
   const [licenceFrontKey, setLicenceFrontKey] = useState(0);
 
@@ -60,7 +62,8 @@ export default function StepDocuments({ applicationId }) {
             driver_id,
             licence_ocr_status,
             licence_face_match_status,
-            drivers (full_name, date_of_birth)
+            drivers (full_name, date_of_birth),
+            documents (type)
           `)
           .eq('id', applicationId)
           .single();
@@ -80,6 +83,12 @@ export default function StepDocuments({ applicationId }) {
           if (ocrOk || faceOk) setFrontUploaded(true);
           if (app.licence_ocr_status === S.NEEDS_REVIEW || app.licence_face_match_status === S.NEEDS_REVIEW) {
             setOverrideSubmitted(true);
+          }
+
+          if (app.documents) {
+            if (app.documents.some(d => d.type === 'license_back')) setBackUploaded(true);
+            if (app.documents.some(d => d.type === 'vehicle_registration')) setRegUploaded(true);
+            if (app.documents.some(d => d.type === 'vehicle_insurance')) setInsUploaded(true);
           }
         }
 
@@ -232,6 +241,8 @@ export default function StepDocuments({ applicationId }) {
   const canProceed =
     frontUploaded &&
     backUploaded &&
+    regUploaded &&
+    insUploaded &&
     !checksRunning &&
     (checksAllPassed || overrideSubmitted || noChecksRan);
 
@@ -321,7 +332,6 @@ export default function StepDocuments({ applicationId }) {
           </div>
         )}
 
-        {/* ── Licence Back ── */}
         <div style={{ marginTop: frontUploaded ? '0' : '1rem' }}>
           <DocumentUploadSlot
             applicationId={applicationId}
@@ -330,6 +340,31 @@ export default function StepDocuments({ applicationId }) {
             accept="image/*,application/pdf"
             onUploadSuccess={() => setBackUploaded(true)}
           />
+        </div>
+
+        <div style={{ marginTop: '2rem', borderTop: '1px solid var(--surface-border)', paddingTop: '2rem' }}>
+          <h3 style={{ marginBottom: '1.5rem' }}>Vehicle Documents</h3>
+          <p className="subtitle" style={{ marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+            Please upload your vehicle registration and proof of insurance.
+          </p>
+
+          <DocumentUploadSlot
+            applicationId={applicationId}
+            documentType="vehicle_registration"
+            label="Vehicle Registration"
+            accept="image/*,application/pdf"
+            onUploadSuccess={() => setRegUploaded(true)}
+          />
+
+          <div style={{ marginTop: regUploaded ? '0' : '1rem' }}>
+            <DocumentUploadSlot
+              applicationId={applicationId}
+              documentType="vehicle_insurance"
+              label="Proof of Insurance"
+              accept="image/*,application/pdf"
+              onUploadSuccess={() => setInsUploaded(true)}
+            />
+          </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
