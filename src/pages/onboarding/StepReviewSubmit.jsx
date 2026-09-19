@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
-import useLogoutOnBack from '../../hooks/useLogoutOnBack';
 
 export default function StepReviewSubmit({ applicationId }) {
   const navigate = useNavigate();
-  useLogoutOnBack();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);

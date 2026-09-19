@@ -79,6 +79,7 @@ export default function OtpVerify() {
           .from('drivers')
           .select('id')
           .eq('auth_id', user.id)
+          .limit(1)
           .single();
 
         if (!driver) {

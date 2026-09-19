@@ -40,6 +40,7 @@ export default function OnboardingLayout() {
           .from('drivers')
           .select('id')
           .eq('auth_id', user.id)
+          .limit(1)
           .single();
 
         if (driverErr && driverErr.code === 'PGRST116') {
