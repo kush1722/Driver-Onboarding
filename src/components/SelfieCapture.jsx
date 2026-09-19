@@ -14,7 +14,7 @@ const GUIDE = {
   LOOK_UP:    { label: 'Tilt your head up slightly',            color: '#F59E0B', subtext: 'We need a clear view of your face' },
   LOOK_DOWN:  { label: 'Tilt your head down slightly',          color: '#F59E0B', subtext: 'We need a clear view of your face' },
   HOLD:       { label: 'Hold still…',                           color: '#6366F1', subtext: 'Almost there, keep steady' },
-  GOOD:       { label: '✓ Perfect — capturing now',             color: '#10B981', subtext: '' },
+  GOOD:       { label: '✓ Perfect — press capture',             color: '#10B981', subtext: 'Tap the camera button to take photo' },
   NO_FACE:    { label: 'No face detected',                      color: '#EF4444', subtext: 'Ensure your face is clearly visible' },
 };
 
@@ -135,8 +135,7 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
               else newGuide = GUIDE.GOOD;
 
               if (goodFrames >= GOOD_FRAMES_NEEDED) {
-                setCaptureAuto(true);
-                return; // stop loop — capture triggered
+                goodFrames = GOOD_FRAMES_NEEDED;
               }
             }
 
@@ -152,8 +151,7 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
         goodFrames++;
         setOvalFill(Math.min(goodFrames / (GOOD_FRAMES_NEEDED * 4), 1));
         if (goodFrames >= GOOD_FRAMES_NEEDED * 4) {
-          setCaptureAuto(true);
-          return;
+          goodFrames = GOOD_FRAMES_NEEDED * 4;
         }
       }
 
