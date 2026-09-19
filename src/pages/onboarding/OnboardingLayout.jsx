@@ -19,7 +19,7 @@ const STEPS = [
 ];
 
 export default function OnboardingLayout() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -104,7 +104,19 @@ export default function OnboardingLayout() {
   return (
     <div className="container">
       <div style={{ maxWidth: '600px', margin: '0 auto', paddingTop: '2rem' }}>
-        <h1 style={{ marginBottom: '2rem', textAlign: 'center' }}>Driver Application</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h1 style={{ margin: 0 }}>Driver Application</h1>
+          <button 
+            onClick={async () => {
+              await signOut();
+              navigate('/signin');
+            }} 
+            className="btn btn-secondary" 
+            style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+          >
+            Sign Out
+          </button>
+        </div>
         
         <ProgressBar currentStep={currentStep} steps={STEPS} />
         
