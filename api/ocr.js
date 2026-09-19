@@ -28,6 +28,7 @@ export default async function handler(req, res) {
       I am providing an image of an ID document.
       The user claims their full name is "${fullName}" and their date of birth is "${dateOfBirth || 'Unknown'}".
       Carefully extract the name, date of birth, and the unique ID number (e.g. document number, license number, or national ID number) from the document.
+      IMPORTANT: If this is a Zimbabwean National ID, the ID number strictly follows the format of digits, a dash, more digits, a single letter, and two final digits (e.g., "79-176824K34" or "08-123456 A 12"). Do NOT include the city name (e.g., "HARARE") or any other extraneous text in the extractedIdNumber field.
       Do the name and DOB match the user's claims? 
       Be reasonably lenient with OCR typos, name order, or date formats (e.g. 01/12/90 matches Dec 1st 1990).
       Return ONLY a JSON object with the following exact structure, with no markdown formatting:
