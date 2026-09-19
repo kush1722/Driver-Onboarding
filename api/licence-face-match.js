@@ -33,6 +33,7 @@ export default async function handler(req, res) {
 
       Your task: determine whether the face on the driver's licence belongs to the same person as in the selfie.
       Allow for natural differences in lighting, angle, ageing, and photo quality between an ID photo and a selfie.
+      CRITICAL: If the user uploads the exact same image twice (e.g., an ID card for both), or if the "selfie" image appears to be a photo of an ID card, YOU MUST STILL COMPARE THE FACES. Do NOT reject the match just because the selfie is not a "live" photo. Focus SOLELY on whether the faces belong to the same person.
 
       If they do NOT match, or you cannot confidently confirm a match, set "matched" to false
       and explain WHY in the "reason" field. Keep the reason short and actionable for the user
@@ -46,7 +47,11 @@ export default async function handler(req, res) {
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3.6-flash',
+      config: {
+        temperature: 0.0,
+        responseMimeType: "application/json",
+      },
       contents: [
         {
           role: 'user',
