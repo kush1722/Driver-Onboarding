@@ -35,6 +35,19 @@ export default function DriverDashboard() {
     fetchData();
   }, [user]);
 
+  // Clean up Supabase auth error codes that land in the URL hash.
+  // When a magic link is reused or expired, Supabase appends:
+  //   #error=access_denied&error_code=otp_expired&...
+  // The link correctly fails, but if the user already has a session they
+  // still see the dashboard — the hash is just noise. Strip it silently.
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('error_code=otp_expired') || hash.includes('error=access_denied')) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+
   if (!driver) return <div className="auth-container">Loading...</div>;
 
   return (
