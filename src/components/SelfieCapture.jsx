@@ -456,31 +456,29 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
 
               </svg>
 
-              {/* ── Live indicator (HTML instead of SVG to prevent cropping) ── */}
+              {/* ── Live indicator ── */}
               <div style={{
                 position: 'absolute', top: '1rem', left: '1rem',
                 display: 'flex', alignItems: 'center', gap: '6px',
                 background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px',
-                zIndex: 10
+                zIndex: 10, whiteSpace: 'nowrap'
               }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444' }} />
                 <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '1px' }}>LIVE</span>
               </div>
 
-              {/* ── Instruction card (bottom of video) ── */}
+              {/* ── Instruction card (positioned above the button) ── */}
               <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)',
-                padding: '3rem 1rem 6.5rem', // Extra bottom padding to stay above capture button
+                position: 'absolute', bottom: '6.5rem', left: 0, right: 0,
                 textAlign: 'center',
-                pointerEvents: 'none',
+                pointerEvents: 'none', zIndex: 10
               }}>
                 <p style={{
                   color: guideColor,
-                  fontSize: '0.9rem',
+                  fontSize: '1rem',
                   fontWeight: '700',
                   margin: '0 0 0.2rem',
-                  textShadow: `0 0 8px ${guideColor}88`,
+                  textShadow: `0px 2px 4px rgba(0,0,0,0.8), 0 0 8px ${guideColor}88`,
                   transition: 'color 0.3s ease',
                   letterSpacing: '0.01em',
                 }}>
@@ -488,19 +486,21 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
                 </p>
                 {guide.subtext && (
                   <p style={{
-                    color: 'rgba(255,255,255,0.7)',
-                    fontSize: '0.75rem',
+                    color: 'rgba(255,255,255,0.9)',
+                    fontSize: '0.8rem',
                     margin: 0,
-                    fontWeight: '400',
+                    fontWeight: '500',
+                    textShadow: '0px 1px 3px rgba(0,0,0,0.8)'
                   }}>
                     {guide.subtext}
                   </p>
                 )}
               </div>
 
+              {/* ── Capture Button ── */}
               <div style={{
-                position: 'absolute', bottom: '1.5rem', left: 0, right: 0,
-                display: 'flex', justifyContent: 'center', pointerEvents: 'none',
+                position: 'absolute', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)',
+                display: 'flex', justifyContent: 'center', pointerEvents: 'none', zIndex: 20
               }}>
                 <button
                   type="button"
@@ -528,12 +528,10 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
               <button
                 type="button"
                 onClick={() => setCameraMode(false)}
-                style={{
-                  fontSize: '0.85rem', color: 'var(--text-secondary)',
-                  background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
-                }}
+                className="btn btn-secondary"
+                style={{ width: '100%', maxWidth: '300px', fontSize: '0.9rem' }}
               >
-                Having camera trouble? Upload a photo instead
+                Upload Photo Instead
               </button>
             </div>
           </>
