@@ -25,13 +25,9 @@ export default async function handler(req, res) {
     let subject = '';
     let htmlContent = '';
 
-    // VERCEL_PROJECT_PRODUCTION_URL = stable production domain (e.g. driver-onboarding.vercel.app)
-    // VERCEL_URL = deployment-specific preview URL (changes every deploy) — don't use for emails
-    // APP_URL = custom domain override (set this in Vercel env vars if you have a custom domain)
+    // Production URL — update this if the domain ever changes
     const baseUrl = process.env.APP_URL
-      || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null)
-      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
-      || 'http://localhost:5173';
+      || 'https://driver-app-frontend.vercel.app';
 
     if (status === 'approved') {
       subject = '🎉 You are approved to drive!';
