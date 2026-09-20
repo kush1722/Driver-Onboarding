@@ -93,11 +93,20 @@ export default function StepIdentityVerification({ applicationId }) {
           });
         }
 
+        // Populate ID number regardless of whether the name matched —
+        // strip "CIT M" / "CIT F" (citizenship/gender suffix on Zimbabwean National IDs)
+        // that may appear on the same line as the actual ID number.
         if (result.extractedIdNumber) {
-          setIdNumber(result.extractedIdNumber);
-          handleBlur({ target: { value: result.extractedIdNumber } }, result.extractedIdNumber);
+          const cleaned = result.extractedIdNumber
+            .replace(/\bCIT\s*[MF]\b/gi, '')  // remove CIT M or CIT F
+            .trim();
+          if (cleaned) {
+            setIdNumber(cleaned);
+            handleBlur({ target: { value: cleaned } }, cleaned);
+          }
         }
         setOcrCompleted(true);
+
         
         // Save to DB
         await supabase.from('applications').update({ ocr_match_status: newOcrStatus }).eq('id', applicationId);

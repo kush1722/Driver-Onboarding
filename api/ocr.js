@@ -69,11 +69,14 @@ export default async function handler(req, res) {
         The ID number ends after the final two-digit suffix.
 
       STEP 2 — Compare the extracted name and DOB against the user's claims:
-      - NAME MATCHING RULES (be generous — any of these count as a match):
-        * The same words appear in any order (e.g. "Joel John" matches "JOHN JOEL NQOBILE" because both words are present)
-        * Minor OCR typos or spelling differences
-        * Middle names being present on the ID but absent in the claim (or vice versa)
-        * All-caps vs mixed-case differences
+      - NAME MATCHING RULES — set isMatch=true if ANY of these apply:
+        * SUBSET RULE (most important): Every word in the user's claim appears somewhere in the full name on the ID.
+          The ID may have MORE words (e.g. a middle name the user didn't enter). That is fine.
+          Example: claim="Joel John" → ID has "JOHN JOEL NQOBILE" → MATCH (both "Joel" and "John" are on the ID)
+          Example: claim="Nqobile John" → ID has "JOHN JOEL NQOBILE" → MATCH (both "Nqobile" and "John" are on the ID)
+          Example: claim="Joel Nqobile John" → ID has "JOHN JOEL NQOBILE" → MATCH (all three words are on the ID)
+        * Minor OCR typos or spelling differences count as the same word
+        * All-caps vs mixed-case differences are ignored
       - DOB MATCHING RULES:
         * Be lenient with day/month order (01/09/2005 and 09/01/2005 could both be valid)
         * Partial year matches (e.g. "90" matching "1990")
