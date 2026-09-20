@@ -110,6 +110,14 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error("Face Match API Error:", error);
+    // Detect when every model + key combination was exhausted due to 503 overload
+    const isServiceUnavailable =
+      error?.status === 503 ||
+      error?.message?.toLowerCase().includes('unavailable') ||
+      error?.message?.includes('503');
+    if (isServiceUnavailable) {
+      return res.status(200).json({ matched: false, serviceUnavailable: true });
+    }
     return res.status(200).json({ matched: false, reason: `API ERROR: Gemini threw exception: ${error.message}` });
   }
 }

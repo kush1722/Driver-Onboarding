@@ -49,6 +49,9 @@ export default function StepDocuments({ applicationId }) {
   // Whether the driver chose to proceed despite failures
   const [overrideSubmitted, setOverrideSubmitted] = useState(false);
 
+  // True when ALL verification models were overloaded (503) — triggers friendly service-down UI
+  const [serviceDown, setServiceDown] = useState(false);
+
   // ── Load driver info + selfie on mount ──────────────────────────────────
   useEffect(() => {
     if (!applicationId) return;
@@ -72,9 +75,13 @@ export default function StepDocuments({ applicationId }) {
         if (app) {
           setDriverDetails(app.drivers);
 
-          // Restore persisted check statuses so the UI reflects prior runs
-          if (app.licence_ocr_status) setOcrStatus(app.licence_ocr_status);
-          if (app.licence_face_match_status) setFaceStatus(app.licence_face_match_status);
+          // Only restore positive statuses on load.
+          // 'no_match' is transient — it means that specific attempt failed, not that
+          // the document is permanently invalid. Restoring it shows error cards with no
+          // reason text (we don't persist reasons), which is confusing on a fresh load.
+          const POSITIVE_STATUSES = [S.MATCH, S.NEEDS_REVIEW];
+          if (POSITIVE_STATUSES.includes(app.licence_ocr_status)) setOcrStatus(app.licence_ocr_status);
+          if (POSITIVE_STATUSES.includes(app.licence_face_match_status)) setFaceStatus(app.licence_face_match_status);
 
           const ocrOk = app.licence_ocr_status === S.MATCH || app.licence_ocr_status === S.NEEDS_REVIEW;
           const faceOk = app.licence_face_match_status === S.MATCH || app.licence_face_match_status === S.NEEDS_REVIEW;
@@ -120,6 +127,9 @@ export default function StepDocuments({ applicationId }) {
       }),
     });
     const data = await res.json();
+    if (data.serviceUnavailable) {
+      return { status: S.NO_MATCH, reason: '', serviceUnavailable: true };
+    }
     if (data.error) {
       return { status: S.NO_MATCH, reason: `API Error: ${data.error}` };
     }
@@ -143,6 +153,9 @@ export default function StepDocuments({ applicationId }) {
       }),
     });
     const data = await res.json();
+    if (data.serviceUnavailable) {
+      return { status: S.NO_MATCH, reason: '', serviceUnavailable: true };
+    }
     if (data.error) {
       return { status: S.NO_MATCH, reason: `API Error: ${data.error}` };
     }
@@ -158,6 +171,7 @@ export default function StepDocuments({ applicationId }) {
     setOcrStatus(S.SCANNING);
     setFaceStatus(S.SCANNING);
     setOverrideSubmitted(false);
+    setServiceDown(false);
 
     // Run both checks in parallel
     const [ocrResult, faceResult] = await Promise.allSettled([
@@ -165,31 +179,31 @@ export default function StepDocuments({ applicationId }) {
       runFaceMatchCheck(),
     ]);
 
-    // Handle OCR result
-    if (ocrResult.status === 'fulfilled') {
-      const { status, reason } = ocrResult.value;
-      setOcrStatus(status);
-      setOcrReason(reason);
-      await supabase.from('applications').update({ licence_ocr_status: status }).eq('id', applicationId);
-    } else {
-      console.error('OCR check threw:', ocrResult.reason);
-      setOcrStatus(S.NO_MATCH);
-      setOcrReason('OCR scan failed. Please try a clearer photo of the licence front.');
-      await supabase.from('applications').update({ licence_ocr_status: S.NO_MATCH }).eq('id', applicationId);
+    // Unpack results (fall back to error defaults if promise rejected)
+    const ocrValue = ocrResult.status === 'fulfilled' ? ocrResult.value : { status: S.NO_MATCH, reason: 'OCR scan failed. Please try a clearer photo of the licence front.' };
+    const faceValue = faceResult.status === 'fulfilled' ? faceResult.value : { status: S.NO_MATCH, reason: 'Face comparison failed. Please try a clearer photo.' };
+
+    if (ocrResult.status === 'rejected') console.error('OCR check threw:', ocrResult.reason);
+    if (faceResult.status === 'rejected') console.error('Face match check threw:', faceResult.reason);
+
+    // ── Service-down path: both checks failed due to model overload ──
+    // Do NOT auto-submit — let the user (or supervisor) see exactly what happened
+    // and make an informed decision.
+    if (ocrValue.serviceUnavailable && faceValue.serviceUnavailable) {
+      setServiceDown(true);
+      setOcrStatus(S.IDLE);
+      setFaceStatus(S.IDLE);
+      return;
     }
 
-    // Handle face-match result
-    if (faceResult.status === 'fulfilled') {
-      const { status, reason } = faceResult.value;
-      setFaceStatus(status);
-      setFaceReason(reason);
-      await supabase.from('applications').update({ licence_face_match_status: status }).eq('id', applicationId);
-    } else {
-      console.error('Face match check threw:', faceResult.reason);
-      setFaceStatus(S.NO_MATCH);
-      setFaceReason('Face comparison failed. Please try a clearer photo.');
-      await supabase.from('applications').update({ licence_face_match_status: S.NO_MATCH }).eq('id', applicationId);
-    }
+    // ── Normal path ──
+    setOcrStatus(ocrValue.status);
+    setOcrReason(ocrValue.reason);
+    await supabase.from('applications').update({ licence_ocr_status: ocrValue.status }).eq('id', applicationId);
+
+    setFaceStatus(faceValue.status);
+    setFaceReason(faceValue.reason);
+    await supabase.from('applications').update({ licence_face_match_status: faceValue.status }).eq('id', applicationId);
   };
 
   // ── Re-upload: reset the licence front slot ────────────────────────────
@@ -200,6 +214,7 @@ export default function StepDocuments({ applicationId }) {
     setFaceStatus(S.IDLE);
     setFaceReason('');
     setOverrideSubmitted(false);
+    setServiceDown(false);
     setLicenceFrontKey((k) => k + 1); // remounts DocumentUploadSlot
   };
 
@@ -263,8 +278,100 @@ export default function StepDocuments({ applicationId }) {
           onUploadSuccess={handleLicenceFrontUpload}
         />
 
-        {/* ── Verification Result Cards ── */}
-        {(ocrStatus || faceStatus) && (
+        {/* ── Service-Down Diagnostic Panel (model overload) ── */}
+        {serviceDown && (
+          <div style={{
+            marginBottom: '1.5rem',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: '1px solid rgba(239,68,68,0.3)',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '0.875rem 1.25rem',
+              background: 'rgba(239,68,68,0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              borderBottom: '1px solid rgba(239,68,68,0.2)',
+            }}>
+              <span style={{ fontSize: '1rem' }}>🔴</span>
+              <p style={{ fontWeight: '700', color: 'var(--error-color)', fontSize: '0.9rem', margin: 0 }}>
+                Verification Service Unavailable — HTTP 503
+              </p>
+            </div>
+
+            {/* What happened */}
+            <div style={{ padding: '1rem 1.25rem', background: 'rgba(239,68,68,0.05)' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', lineHeight: '1.7', margin: '0 0 0.75rem 0' }}>
+                The automated document verification pipeline attempted the following and was unable to complete:
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
+                {[
+                  { icon: '❌', label: 'OCR / Name & DOB check', detail: 'gemini-3.8-flash — All keys raced in parallel → 503 Service Unavailable' },
+                  { icon: '❌', label: 'Model fallback', detail: 'gemini-2.0-flash — Attempted as secondary fallback → 503 Service Unavailable' },
+                  { icon: '❌', label: 'Face Match check', detail: 'gemini-3.8-flash — All keys raced in parallel → 503 Service Unavailable' },
+                ].map(({ icon, label, detail }) => (
+                  <div key={label} style={{
+                    display: 'flex', gap: '0.6rem', alignItems: 'flex-start',
+                    padding: '0.5rem 0.75rem',
+                    background: 'rgba(0,0,0,0.15)',
+                    borderRadius: '8px',
+                    fontFamily: 'monospace',
+                    fontSize: '0.78rem',
+                  }}>
+                    <span>{icon}</span>
+                    <div>
+                      <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{label}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}> — {detail}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Root cause */}
+              <div style={{
+                padding: '0.75rem 1rem',
+                background: 'rgba(99,102,241,0.08)',
+                border: '1px solid rgba(99,102,241,0.2)',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+              }}>
+                <p style={{ color: 'var(--accent-color)', fontWeight: '600', fontSize: '0.8rem', margin: '0 0 0.25rem 0' }}>Root Cause</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: 0, lineHeight: '1.6' }}>
+                  Google's Gemini API returns HTTP 503 when a specific model endpoint is under extreme demand.
+                  This is shard-level load shedding — individual requests get routed to overloaded backend nodes.
+                  The system attempted parallel key racing (all available API keys fired simultaneously) to increase
+                  the chance of hitting a healthy shard, then fell back to a secondary model. Both strategies
+                  were exhausted. This is a transient Google infrastructure issue, not a code or image problem.
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="form-row" style={{ marginBottom: 0 }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleRetry}
+                  style={{ gap: '0.5rem' }}
+                >
+                  <RefreshCw size={15} /> Retry Verification
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleSubmitForReview}
+                  style={{ gap: '0.5rem', color: 'var(--warning-color)', borderColor: 'var(--warning-color)' }}
+                >
+                  <Send size={15} /> Escalate to Admin Review
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Verification Result Cards (normal path only) ── */}
+        {!serviceDown && (ocrStatus || faceStatus) && (
           <div style={{ marginBottom: '1.5rem' }}>
             <CheckCard label="Name & Date of Birth" status={ocrStatus} reason={ocrReason} />
             <CheckCard label="Face Match (Licence → Selfie)" status={faceStatus} reason={faceReason} />

@@ -97,6 +97,14 @@ export default async function handler(req, res) {
     return res.status(200).json(result);
   } catch (error) {
     console.error("Gemini API Error:", error);
+    // Detect when every model + key combination was exhausted due to 503 overload
+    const isServiceUnavailable =
+      error?.status === 503 ||
+      error?.message?.toLowerCase().includes('unavailable') ||
+      error?.message?.includes('503');
+    if (isServiceUnavailable) {
+      return res.status(200).json({ isMatch: false, serviceUnavailable: true });
+    }
     return res.status(200).json({ isMatch: false, extractedName: `API ERROR: Gemini threw exception: ${error.message}` });
   }
 }
