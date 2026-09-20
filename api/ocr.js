@@ -72,7 +72,7 @@ export default async function handler(req, res) {
     `;
 
     const response = await generateContentWithRotation({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-3.8-flash',
         contents: [
             {
                 role: 'user',
