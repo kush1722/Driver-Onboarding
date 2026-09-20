@@ -87,7 +87,7 @@ export default function DocumentUploadSlot({
         // Update
         await supabase
           .from('documents')
-          .update({ file_url: fileUrl, uploaded_at: new Date() })
+          .update({ file_url: fileUrl, created_at: new Date() })
           .eq('id', existingDocs[0].id);
       } else {
         // Insert

@@ -241,7 +241,7 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
 
       if (existing?.length > 0) {
         await supabase.from('documents')
-          .update({ file_url: data.path, uploaded_at: new Date() })
+          .update({ file_url: data.path, created_at: new Date() })
           .eq('id', existing[0].id);
       } else {
         await supabase.from('documents')
