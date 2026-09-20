@@ -120,6 +120,9 @@ export default function StepDocuments({ applicationId }) {
       }),
     });
     const data = await res.json();
+    if (data.error) {
+      return { status: S.NO_MATCH, reason: `API Error: ${data.error}` };
+    }
     return {
       status: data.isMatch ? S.MATCH : S.NO_MATCH,
       reason: data.isMatch
@@ -140,6 +143,9 @@ export default function StepDocuments({ applicationId }) {
       }),
     });
     const data = await res.json();
+    if (data.error) {
+      return { status: S.NO_MATCH, reason: `API Error: ${data.error}` };
+    }
     return {
       status: data.matched ? S.MATCH : S.NO_MATCH,
       reason: data.reason || '',
