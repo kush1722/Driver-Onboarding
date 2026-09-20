@@ -1,26 +1,44 @@
 import { generateContentWithRotation } from './_gemini-client.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { imageBase64, fullName, dateOfBirth } = req.body;
-  if (!imageBase64 || !fullName) {
-    return res.status(400).json({ error: 'Missing required fields: imageBase64 and fullName' });
+  const { applicationId, fullName, dateOfBirth, isLicence = false } = req.body;
+  if (!applicationId || !fullName) {
+    return res.status(400).json({ error: 'Missing required fields: applicationId and fullName' });
   }
 
   try {
+    const fileName = isLicence ? 'license_front.jpg' : 'id_front.jpg';
     
-    // imageBase64 comes as "data:image/jpeg;base64,/9j/4AAQ..."
-    // We need to strip the prefix for the Gemini API
-    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) {
-      return res.status(400).json({ error: 'Invalid base64 string' });
+    // Create a temporary signed URL to download the image from the private bucket
+    const { data: urlData, error: urlErr } = await supabase.storage
+      .from('driver-documents')
+      .createSignedUrl(`${applicationId}/${fileName}`, 60);
+
+    if (urlErr || !urlData?.signedUrl) {
+      console.error("Failed to get signed URL:", urlErr);
+      return res.status(400).json({ error: 'Could not access document in storage' });
+    }
+
+    // Download the image into memory
+    const imageRes = await fetch(urlData.signedUrl);
+    if (!imageRes.ok) {
+      return res.status(400).json({ error: 'Failed to download document from storage' });
     }
     
-    const mimeType = matches[1];
-    const data = matches[2];
+    const arrayBuffer = await imageRes.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const data = buffer.toString('base64');
+    const mimeType = 'image/jpeg';
 
     const prompt = `
       You are an expert identity document validator.

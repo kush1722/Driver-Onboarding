@@ -1,6 +1,6 @@
-export async function compareFaces(imgElA, imgElB) {
-  if (!imgElA || !imgElB) {
-    return { matched: false, distance: null, reason: 'missing_image' };
+export async function compareFaces(applicationId) {
+  if (!applicationId) {
+    return { matched: false, distance: null, reason: 'missing_application_id' };
   }
 
   try {
@@ -8,8 +8,7 @@ export async function compareFaces(imgElA, imgElB) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
-        idImageBase64: imgElA.src, 
-        selfieImageBase64: imgElB.src 
+        applicationId
       })
     });
 

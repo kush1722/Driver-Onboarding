@@ -75,7 +75,7 @@ export default function StepIdentityVerification({ applicationId }) {
       setOcrFeedback('Scanning ID for Name, DOB, and ID Number...');
       setOcrCompleted(false);
       try {
-        const result = await verifyIdWithGemini(preview, driverDetails.full_name, driverDetails.date_of_birth);
+        const result = await verifyIdWithGemini(applicationId, driverDetails.full_name, driverDetails.date_of_birth);
         
         let newOcrStatus = 'no_match';
         if (result.isMatch) {
@@ -110,22 +110,10 @@ export default function StepIdentityVerification({ applicationId }) {
   };
 
   const checkFaceMatch = async (idImgSrc, selfieImgSrc) => {
+    // Only check if both are uploaded
     if (!idImgSrc || !selfieImgSrc) return;
     
-    // Create image elements for face-api
-    const imgA = new Image();
-    const imgB = new Image();
-    
-    imgA.src = idImgSrc;
-    imgB.src = selfieImgSrc;
-
-    // Wait for images to load
-    await Promise.all([
-      new Promise(resolve => imgA.onload = resolve),
-      new Promise(resolve => imgB.onload = resolve)
-    ]);
-
-    const result = await compareFaces(imgA, imgB);
+    const result = await compareFaces(applicationId);
     
     let newStatus = 'needs_review';
     if (result.matched) {

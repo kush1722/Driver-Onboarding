@@ -1,31 +1,43 @@
 import { generateContentWithRotation } from './_gemini-client.js';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
+);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { licenceFrontBase64, selfieBase64 } = req.body;
-  if (!licenceFrontBase64 || !selfieBase64) {
-    return res.status(400).json({ error: 'Missing required images: licenceFrontBase64 and selfieBase64' });
+  const { applicationId } = req.body;
+  if (!applicationId) {
+    return res.status(400).json({ error: 'Missing required field: applicationId' });
   }
 
   try {
+    // Helper function to fetch image from Supabase Storage and convert to Base64
+    const fetchImageAsBase64 = async (path) => {
+      const { data: urlData, error: urlErr } = await supabase.storage
+        .from('driver-documents')
+        .createSignedUrl(path, 60);
 
-    // Parse licence image
-    const licenceMatches = licenceFrontBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!licenceMatches) return res.status(400).json({ error: 'Invalid licence base64 string' });
-    let licenceMime = licenceMatches[1];
-    const licenceData = licenceMatches[2];
+      if (urlErr || !urlData?.signedUrl) throw new Error(`Could not access ${path} in storage`);
 
-    // Parse selfie image
-    const selfieMatches = selfieBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!selfieMatches) return res.status(400).json({ error: 'Invalid selfie base64 string' });
-    let selfieMime = selfieMatches[1];
-    const selfieData = selfieMatches[2];
+      const imageRes = await fetch(urlData.signedUrl);
+      if (!imageRes.ok) throw new Error(`Failed to download ${path}`);
 
-    if (licenceMime === 'application/octet-stream') licenceMime = 'image/jpeg';
-    if (selfieMime === 'application/octet-stream') selfieMime = 'image/jpeg';
+      const arrayBuffer = await imageRes.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      return buffer.toString('base64');
+    };
+
+    // Download both images into memory
+    const licenceData = await fetchImageAsBase64(`${applicationId}/license_front.jpg`);
+    const selfieData = await fetchImageAsBase64(`${applicationId}/selfie.jpg`);
+    const licenceMime = 'image/jpeg';
+    const selfieMime = 'image/jpeg';
 
     const prompt = `
       You are an expert biometric verification system.

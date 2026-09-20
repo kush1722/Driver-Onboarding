@@ -37,7 +37,6 @@ export default function StepDocuments({ applicationId }) {
 
   // Context loaded on mount
   const [driverDetails, setDriverDetails] = useState(null);
-  const [selfieBase64, setSelfieBase64] = useState(null);
   const [loadingContext, setLoadingContext] = useState(true);
   const [contextError, setContextError] = useState(null);
 
@@ -92,17 +91,8 @@ export default function StepDocuments({ applicationId }) {
           }
         }
 
-        // Fetch selfie as base64 — this is the biometric reference from the identity step
-        const { data: urlData, error: urlErr } = await supabase.storage
-          .from('driver-documents')
-          .createSignedUrl(`${applicationId}/selfie.jpg`, 3600);
-
-        if (urlErr || !urlData?.signedUrl) {
-          setContextError('We could not load your selfie from the identity step. Please go back and retake it.');
-        } else {
-          const base64 = await urlToBase64(urlData.signedUrl);
-          setSelfieBase64(base64);
-        }
+        // We no longer need to fetch the selfie base64 on the client side
+        // because the Vercel API will securely fetch it directly from Supabase!
       } catch (err) {
         console.error('StepDocuments: context load failed', err);
         setContextError('Failed to load your application details. Please refresh and try again.');
@@ -115,7 +105,7 @@ export default function StepDocuments({ applicationId }) {
   }, [applicationId]);
 
   // ── OCR helper ─────────────────────────────────────────────────────────
-  const runOcrCheck = async (licencePreview) => {
+  const runOcrCheck = async () => {
     if (!driverDetails?.full_name) {
       return { status: S.NO_MATCH, reason: 'Driver details not found. Please complete the personal details step first.' };
     }
@@ -123,9 +113,10 @@ export default function StepDocuments({ applicationId }) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        imageBase64: licencePreview,
+        applicationId,
         fullName: driverDetails.full_name,
         dateOfBirth: driverDetails.date_of_birth,
+        isLicence: true,
       }),
     });
     const data = await res.json();
@@ -140,19 +131,12 @@ export default function StepDocuments({ applicationId }) {
   };
 
   // ── Face-match helper ──────────────────────────────────────────────────
-  const runFaceMatchCheck = async (licencePreview) => {
-    if (!selfieBase64) {
-      return {
-        status: S.NO_MATCH,
-        reason: 'Your selfie from the identity step could not be loaded. Please go back and retake your selfie.',
-      };
-    }
+  const runFaceMatchCheck = async () => {
     const res = await fetch('/api/licence-face-match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        licenceFrontBase64: licencePreview,
-        selfieBase64,
+        applicationId,
       }),
     });
     const data = await res.json();
@@ -163,7 +147,7 @@ export default function StepDocuments({ applicationId }) {
   };
 
   // ── Called by DocumentUploadSlot after successful upload ───────────────
-  const handleLicenceFrontUpload = async (_fileUrl, preview) => {
+  const handleLicenceFrontUpload = async () => {
     setFrontUploaded(true);
     setOcrStatus(S.SCANNING);
     setFaceStatus(S.SCANNING);
@@ -171,8 +155,8 @@ export default function StepDocuments({ applicationId }) {
 
     // Run both checks in parallel
     const [ocrResult, faceResult] = await Promise.allSettled([
-      runOcrCheck(preview),
-      runFaceMatchCheck(preview),
+      runOcrCheck(),
+      runFaceMatchCheck(),
     ]);
 
     // Handle OCR result

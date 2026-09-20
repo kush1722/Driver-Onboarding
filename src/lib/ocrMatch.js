@@ -1,12 +1,12 @@
 /**
  * Sends the ID image and driver claims to the secure Vercel backend for Gemini validation.
  */
-export async function verifyIdWithGemini(imageBase64, fullName, dateOfBirth) {
+export async function verifyIdWithGemini(applicationId, fullName, dateOfBirth) {
   try {
     const response = await fetch('/api/ocr', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageBase64, fullName, dateOfBirth })
+      body: JSON.stringify({ applicationId, fullName, dateOfBirth })
     });
 
     if (!response.ok) {
