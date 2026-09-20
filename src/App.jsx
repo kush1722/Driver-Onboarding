@@ -53,15 +53,19 @@ const DriverRouter = () => {
           .single();
 
         if (driver) {
-          const { data: app } = await supabase
+          const { data: apps } = await supabase
             .from('applications')
             .select('status')
-            .eq('driver_id', driver.id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
+            .eq('driver_id', driver.id);
             
-          setAppStatus(app?.status || 'none');
+          let finalStatus = 'none';
+          if (apps && apps.length > 0) {
+            if (apps.some(a => a.status === 'approved')) finalStatus = 'approved';
+            else if (apps.some(a => ['under_review', 'submitted'].includes(a.status))) finalStatus = 'under_review';
+            else if (apps.some(a => a.status === 'rejected')) finalStatus = 'rejected';
+            else finalStatus = 'draft';
+          }
+          setAppStatus(finalStatus);
         } else {
           setAppStatus('none');
         }

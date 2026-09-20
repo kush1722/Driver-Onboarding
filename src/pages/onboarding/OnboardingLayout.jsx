@@ -59,12 +59,11 @@ export default function OnboardingLayout() {
 
         if (!driver) throw new Error("Driver profile not found and could not be created.");
 
-        // 2. Look for existing draft application
+        // 2. Look for existing application
         let { data: app, error: appErr } = await supabase
           .from('applications')
           .select('id, status')
           .eq('driver_id', driver.id)
-          .eq('status', 'draft')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -82,6 +81,10 @@ export default function OnboardingLayout() {
         }
 
         if (app) {
+          if (app.status !== 'draft') {
+            navigate('/', { replace: true });
+            return;
+          }
           setApplicationId(app.id);
           // Only redirect if they hit the base /onboarding path
           if (location.pathname === '/onboarding' || location.pathname === '/onboarding/') {

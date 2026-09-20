@@ -37,7 +37,12 @@ export default function DocumentUploadSlot({
         const { data: urlData } = await supabase.storage
           .from('driver-documents')
           .createSignedUrl(docRecord.file_url, 300); // 5-minute URL for display
-        if (urlData?.signedUrl) setPreviewUrl(urlData.signedUrl);
+        if (urlData?.signedUrl) {
+          setPreviewUrl(urlData.signedUrl);
+          if (onUploadSuccess) onUploadSuccess(docRecord.file_url, urlData.signedUrl, true);
+        }
+      } else {
+        if (onUploadSuccess) onUploadSuccess(docRecord.file_url, null, true);
       }
     };
     loadExisting();

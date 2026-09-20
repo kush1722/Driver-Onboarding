@@ -68,6 +68,31 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
     };
   }, [cameraMode, capturedImage]);
 
+  // On mount, check if a selfie already exists
+  useEffect(() => {
+    if (!applicationId) return;
+    const loadExisting = async () => {
+      const { data: docRecord } = await supabase
+        .from('documents')
+        .select('file_url')
+        .eq('application_id', applicationId)
+        .eq('type', 'selfie')
+        .single();
+
+      if (!docRecord?.file_url) return;
+
+      const { data: urlData } = await supabase.storage
+        .from('driver-documents')
+        .createSignedUrl(docRecord.file_url, 300);
+      if (urlData?.signedUrl) {
+        setCapturedImage(urlData.signedUrl);
+        setCameraMode(false);
+        if (onCaptureSuccess) onCaptureSuccess(docRecord.file_url, urlData.signedUrl, true);
+      }
+    };
+    loadExisting();
+  }, [applicationId]);
+
   // ── Native FaceDetector init + brightness sampler canvas ─────────────────
   useEffect(() => {
     if (nativeFaceDetectorSupported) {
@@ -429,18 +454,24 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
                   />
                 ))}
 
-                {/* ── Live indicator dot ── */}
-                <circle cx="5" cy="5" r="1.2" fill="#EF4444">
-                  <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
-                </circle>
-                <text x="7.5" y="5.9" fill="white" fontSize="3" fontWeight="bold" fontFamily="Inter,sans-serif">LIVE</text>
               </svg>
+
+              {/* ── Live indicator (HTML instead of SVG to prevent cropping) ── */}
+              <div style={{
+                position: 'absolute', top: '1rem', left: '1rem',
+                display: 'flex', alignItems: 'center', gap: '6px',
+                background: 'rgba(0,0,0,0.5)', padding: '4px 8px', borderRadius: '4px',
+                zIndex: 10
+              }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#EF4444' }} />
+                <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '1px' }}>LIVE</span>
+              </div>
 
               {/* ── Instruction card (bottom of video) ── */}
               <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0,
                 background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)',
-                padding: '2.5rem 1rem 1rem',
+                padding: '3rem 1rem 6.5rem', // Extra bottom padding to stay above capture button
                 textAlign: 'center',
                 pointerEvents: 'none',
               }}>
@@ -468,8 +499,8 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
               </div>
 
               <div style={{
-                position: 'absolute', bottom: '1.5rem', right: '1.5rem',
-                display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end',
+                position: 'absolute', bottom: '1.5rem', left: 0, right: 0,
+                display: 'flex', justifyContent: 'center', pointerEvents: 'none',
               }}>
                 <button
                   type="button"
@@ -484,6 +515,7 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
                     transition: 'transform 0.1s ease',
+                    pointerEvents: 'auto',
                   }}
                   onMouseDown={e => e.currentTarget.style.transform = 'scale(0.93)'}
                   onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}

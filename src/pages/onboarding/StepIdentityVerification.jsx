@@ -39,6 +39,7 @@ export default function StepIdentityVerification({ applicationId }) {
             id_type, 
             id_number, 
             face_match_status,
+            ocr_match_status,
             drivers (full_name, date_of_birth)
           `)
           .eq('id', applicationId)
@@ -51,6 +52,16 @@ export default function StepIdentityVerification({ applicationId }) {
           setIdNumber(app.id_number || '');
           setMatchStatus(app.face_match_status || null);
           
+          if (app.ocr_match_status) {
+            setOcrStatus(app.ocr_match_status);
+            setOcrCompleted(true);
+            if (app.ocr_match_status === 'match') {
+              setOcrFeedback('ID details verified previously.');
+            } else {
+              setOcrFeedback('A reviewer will verify this manually.');
+            }
+          }
+
           if (app.drivers) {
              setDriverDetails(app.drivers);
           }
@@ -65,13 +76,17 @@ export default function StepIdentityVerification({ applicationId }) {
     fetchIdentityDetails();
   }, [applicationId]);
 
-  const handleIdFrontUpload = async (url, preview) => {
+  const handleIdFrontUpload = async (url, preview, isExisting = false) => {
     setIdFrontUrl(url);
-    setIdFrontPreview(preview);
-    checkFaceMatch(preview, selfiePreview);
+    setIdFrontPreview(preview || url);
+    
+    // Only run face match if this is a new upload or we don't have a status yet
+    if (!isExisting) {
+      checkFaceMatch(preview || url, selfiePreview);
+    }
     
     // Trigger OCR Scan
-    if (driverDetails && driverDetails.full_name) {
+    if (!isExisting && driverDetails && driverDetails.full_name) {
       setOcrStatus('scanning');
       setOcrFeedback('Scanning ID for Name, DOB, and ID Number...');
       setOcrCompleted(false);
@@ -119,9 +134,11 @@ export default function StepIdentityVerification({ applicationId }) {
     }
   };
 
-  const handleSelfieUpload = (url, preview) => {
-    setSelfiePreview(preview);
-    checkFaceMatch(idFrontPreview, preview);
+  const handleSelfieUpload = (url, preview, isExisting = false) => {
+    setSelfiePreview(preview || url);
+    if (!isExisting) {
+      checkFaceMatch(idFrontPreview, preview || url);
+    }
   };
 
   const checkFaceMatch = async (idImgSrc, selfieImgSrc) => {
