@@ -15,14 +15,17 @@ export default async function handler(req, res) {
     // Parse ID image
     const idMatches = idImageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!idMatches) return res.status(400).json({ error: 'Invalid ID base64 string' });
-    const idMime = idMatches[1];
+    let idMime = idMatches[1];
     const idData = idMatches[2];
 
     // Parse Selfie image
     const selfieMatches = selfieImageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!selfieMatches) return res.status(400).json({ error: 'Invalid Selfie base64 string' });
-    const selfieMime = selfieMatches[1];
+    let selfieMime = selfieMatches[1];
     const selfieData = selfieMatches[2];
+
+    if (idMime === 'application/octet-stream') idMime = 'image/jpeg';
+    if (selfieMime === 'application/octet-stream') selfieMime = 'image/jpeg';
 
     const prompt = `
       You are an expert biometric verification system. 

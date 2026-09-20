@@ -15,14 +15,17 @@ export default async function handler(req, res) {
     // Parse licence image
     const licenceMatches = licenceFrontBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!licenceMatches) return res.status(400).json({ error: 'Invalid licence base64 string' });
-    const licenceMime = licenceMatches[1];
+    let licenceMime = licenceMatches[1];
     const licenceData = licenceMatches[2];
 
     // Parse selfie image
     const selfieMatches = selfieBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!selfieMatches) return res.status(400).json({ error: 'Invalid selfie base64 string' });
-    const selfieMime = selfieMatches[1];
+    let selfieMime = selfieMatches[1];
     const selfieData = selfieMatches[2];
+
+    if (licenceMime === 'application/octet-stream') licenceMime = 'image/jpeg';
+    if (selfieMime === 'application/octet-stream') selfieMime = 'image/jpeg';
 
     const prompt = `
       You are an expert biometric verification system.
