@@ -13,6 +13,8 @@ const GUIDE = {
   OFF_CENTER: { label: 'Center your face',                      color: '#F59E0B', subtext: 'Align your face with the oval guide' },
   LOOK_UP:    { label: 'Tilt your head up slightly',            color: '#F59E0B', subtext: 'We need a clear view of your face' },
   LOOK_DOWN:  { label: 'Tilt your head down slightly',          color: '#F59E0B', subtext: 'We need a clear view of your face' },
+  TOO_DARK:   { label: '⚠ Too dark — improve your lighting',   color: '#F59E0B', subtext: 'Face a light source. Avoid windows or lights behind you' },
+  TOO_BRIGHT: { label: '⚠ Too much glare or brightness',       color: '#F59E0B', subtext: 'Move away from direct light or a bright window' },
   HOLD:       { label: 'Hold still…',                           color: '#6366F1', subtext: 'Almost there, keep steady' },
   GOOD:       { label: '✓ Perfect — press capture',             color: '#10B981', subtext: 'Tap the camera button to take photo' },
   NO_FACE:    { label: 'No face detected',                      color: '#EF4444', subtext: 'Ensure your face is clearly visible' },
@@ -28,6 +30,7 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
   const rafRef      = useRef(null);
   const detectorRef = useRef(null);
   const countdownRef = useRef(null);
+  const samplerRef   = useRef(null); // offscreen canvas for brightness sampling
 
   const [stream, setStream]             = useState(null);
   const [error, setError]               = useState(null);
@@ -65,14 +68,38 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
     };
   }, [cameraMode, capturedImage]);
 
-  // ── Native FaceDetector init ──────────────────────────────────────────────
+  // ── Native FaceDetector init + brightness sampler canvas ─────────────────
   useEffect(() => {
     if (nativeFaceDetectorSupported) {
       try {
         detectorRef.current = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
       } catch { /* not available */ }
     }
+    // Create a tiny offscreen canvas used to sample frame brightness every tick.
+    // Using willReadFrequently so the browser can optimise repeated getImageData calls.
+    const c = document.createElement('canvas');
+    c.width = 32; c.height = 32;
+    samplerRef.current = c;
   }, []);
+
+  // Samples the perceived luminance of the center of the video frame (0–255).
+  // A score below ~45 = too dark; above ~215 = too bright / blown out.
+  const sampleBrightness = (video) => {
+    try {
+      const c = samplerRef.current;
+      if (!c || !video.videoWidth) return 128;
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      // Sample the centre third of the frame where the face should be
+      const vw = video.videoWidth, vh = video.videoHeight;
+      ctx.drawImage(video, vw * 0.25, vh * 0.15, vw * 0.5, vh * 0.7, 0, 0, 32, 32);
+      const px = ctx.getImageData(0, 0, 32, 32).data;
+      let lum = 0;
+      for (let i = 0; i < px.length; i += 4) {
+        lum += px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114;
+      }
+      return lum / (px.length / 4);
+    } catch { return 128; }
+  };
 
   // ── Detection loop ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -127,15 +154,21 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
             else if (dyPct < -0.1) newGuide = GUIDE.LOOK_DOWN;
             else if (dyPct >  0.1) newGuide = GUIDE.LOOK_UP;
             else {
-              goodFrames++;
-              const progress = Math.min(goodFrames / GOOD_FRAMES_NEEDED, 1);
-              setOvalFill(progress);
-
-              if (goodFrames < GOOD_FRAMES_NEEDED * 0.5) newGuide = GUIDE.HOLD;
-              else newGuide = GUIDE.GOOD;
-
-              if (goodFrames >= GOOD_FRAMES_NEEDED) {
-                goodFrames = GOOD_FRAMES_NEEDED;
+              // Position is good — now verify lighting before saying Perfect
+              const lum = sampleBrightness(video);
+              if (lum < 45) {
+                newGuide = GUIDE.TOO_DARK;
+                goodFrames = Math.max(0, goodFrames - 2);
+              } else if (lum > 215) {
+                newGuide = GUIDE.TOO_BRIGHT;
+                goodFrames = Math.max(0, goodFrames - 2);
+              } else {
+                goodFrames++;
+                const progress = Math.min(goodFrames / GOOD_FRAMES_NEEDED, 1);
+                setOvalFill(progress);
+                if (goodFrames < GOOD_FRAMES_NEEDED * 0.5) newGuide = GUIDE.HOLD;
+                else newGuide = GUIDE.GOOD;
+                if (goodFrames >= GOOD_FRAMES_NEEDED) goodFrames = GOOD_FRAMES_NEEDED;
               }
             }
 
@@ -146,13 +179,14 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
           }
         } catch { /* detector busy, skip frame */ }
       } else {
-        // Fallback: simulate guided sequence for browsers without FaceDetector
-        newGuide = simulatedGuide(goodFrames, GOOD_FRAMES_NEEDED);
-        goodFrames++;
-        setOvalFill(Math.min(goodFrames / (GOOD_FRAMES_NEEDED * 4), 1));
-        if (goodFrames >= GOOD_FRAMES_NEEDED * 4) {
-          goodFrames = GOOD_FRAMES_NEEDED * 4;
-        }
+        // Fallback: FaceDetector API not available in this browser.
+        // We cannot detect face position, but we CAN check lighting quality.
+        // Never auto-say "Perfect" — show guidance and let the user manually capture.
+        const lum = sampleBrightness(video);
+        if (lum < 45)        newGuide = GUIDE.TOO_DARK;
+        else if (lum > 215)  newGuide = GUIDE.TOO_BRIGHT;
+        else                 newGuide = GUIDE.WAITING;
+        setOvalFill(0); // no progress fill in fallback mode
       }
 
       setGuide(newGuide);
