@@ -19,6 +19,7 @@ export default function StepIdentityVerification({ applicationId }) {
   const [selfiePreview, setSelfiePreview] = useState(null);
   
   const [matchStatus, setMatchStatus] = useState(null); // 'match', 'no_match', 'needs_review'
+  const [checkingFaceMatch, setCheckingFaceMatch] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
 
   // Driver details for OCR matching
@@ -145,33 +146,38 @@ export default function StepIdentityVerification({ applicationId }) {
     // Only check if both are uploaded
     if (!idImgSrc || !selfieImgSrc) return;
     
-    const result = await compareFaces(applicationId);
-    
-    let newStatus = 'needs_review';
-    if (result.matched) {
-      newStatus = 'match';
-      setError(null);
-    } else {
-      const attempts = failedAttempts + 1;
-      setFailedAttempts(attempts);
-      const reasonMsg = result.reason ? ` Reason: ${result.reason}` : '';
+    setCheckingFaceMatch(true);
+    try {
+      const result = await compareFaces(applicationId);
       
-      if (attempts < 3) {
-        newStatus = 'no_match';
-        setError(`We couldn't get a clear match.${reasonMsg} Please retake your selfie.`);
+      let newStatus = 'needs_review';
+      if (result.matched) {
+        newStatus = 'match';
+        setError(null);
       } else {
-        newStatus = 'needs_review';
-        setError(`We still couldn't match the faces.${reasonMsg} You can proceed, but a reviewer will check it manually.`);
+        const attempts = failedAttempts + 1;
+        setFailedAttempts(attempts);
+        const reasonMsg = result.reason ? ` Reason: ${result.reason}` : '';
+        
+        if (attempts < 3) {
+          newStatus = 'no_match';
+          setError(`We couldn't get a clear match.${reasonMsg} Please retake your selfie.`);
+        } else {
+          newStatus = 'needs_review';
+          setError(`We still couldn't match the faces.${reasonMsg} You can proceed, but a reviewer will check it manually.`);
+        }
       }
+
+      setMatchStatus(newStatus);
+
+      // Save match status and distance
+      await supabase.from('applications').update({
+        face_match_status: newStatus,
+        face_match_distance: result.distance
+      }).eq('id', applicationId);
+    } finally {
+      setCheckingFaceMatch(false);
     }
-
-    setMatchStatus(newStatus);
-
-    // Save match status and distance
-    await supabase.from('applications').update({
-      face_match_status: newStatus,
-      face_match_distance: result.distance
-    }).eq('id', applicationId);
   };
 
   const handleBlur = async (e, forcedValue) => {
@@ -303,16 +309,23 @@ export default function StepIdentityVerification({ applicationId }) {
           />
         </div>
 
-        {matchStatus === 'match' && (
+        {checkingFaceMatch && (
+          <div style={{ padding: '1rem', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-color)', borderRadius: '8px', marginBottom: '1rem' }}>
+            <span className="spinner" style={{ display: 'inline-block', width: '12px', height: '12px', border: '2px solid', borderRightColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginRight: '8px' }}></span>
+            Verifying face match with AI...
+          </div>
+        )}
+
+        {matchStatus === 'match' && !checkingFaceMatch && (
           <div style={{ padding: '1rem', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success-color)', borderRadius: '8px', marginBottom: '1rem' }}>
-            Face match successful!
+            ✓ Face match successful!
           </div>
         )}
 
         {error && <p className="error-text mb-4">{error}</p>}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
-          <button type="submit" className="btn btn-primary" disabled={saving || !idFrontPreview || !selfiePreview || matchStatus === 'no_match'}>
+          <button type="submit" className="btn btn-primary" disabled={saving || checkingFaceMatch || !idFrontPreview || !selfiePreview || matchStatus === 'no_match'}>
             {saving ? 'Saving...' : 'Next Step'}
           </button>
         </div>
