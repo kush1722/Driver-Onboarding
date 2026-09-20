@@ -31,7 +31,22 @@ export default function StatusPending() {
   }, [user]);
 
   return (
-    <div className="auth-container">
+    <div className="auth-container" style={{ position: 'relative' }}>
+      <button 
+        onClick={async () => {
+          await signOut();
+          // window.location.href='/signin' if needed, but signOut triggers auth state change anyway
+        }} 
+        style={{
+          position: 'absolute', top: '1rem', right: '1rem',
+          background: 'rgba(255,255,255,0.05)', border: '1px solid var(--surface-border)', color: 'var(--text-secondary)',
+          display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer',
+          padding: '0.5rem 0.75rem', borderRadius: '8px', zIndex: 10, backdropFilter: 'blur(10px)'
+        }}
+      >
+        <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>Sign Out</span>
+      </button>
+
       <div className="glass-panel auth-card" style={{ padding: '3rem 2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem', color: 'var(--warning-color)' }}>
           <Clock size={64} />
