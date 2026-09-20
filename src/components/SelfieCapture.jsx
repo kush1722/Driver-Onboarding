@@ -242,7 +242,7 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
   }, [guide]);
 
   // ── Capture ───────────────────────────────────────────────────────────────
-  const handleCapture = useCallback(async () => {
+  const handleCapture = async () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     if (!videoRef.current || !canvasRef.current) return;
 
@@ -256,7 +256,7 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
 
     if (stream) { stream.getTracks().forEach(t => t.stop()); setStream(null); }
     await uploadSelfie(imageUrl);
-  }, [stream]);
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
