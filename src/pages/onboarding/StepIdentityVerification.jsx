@@ -322,6 +322,29 @@ export default function StepIdentityVerification({ applicationId }) {
           </div>
         )}
 
+        {matchStatus === 'no_match' && !checkingFaceMatch && (
+          <div style={{ padding: '1rem', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning-color)', borderRadius: '8px', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div>
+              <p style={{ margin: '0 0 0.25rem 0', fontWeight: 'bold' }}>We couldn't get a clear match.</p>
+              <p style={{ margin: 0, fontSize: '0.85rem' }}>You can retake your selfie, or if you're stuck, send it for manual review.</p>
+            </div>
+            <div>
+              <button 
+                type="button" 
+                onClick={async () => {
+                  setMatchStatus('needs_review');
+                  setError(null);
+                  await supabase.from('applications').update({ face_match_status: 'needs_review' }).eq('id', applicationId);
+                }} 
+                className="btn btn-secondary" 
+                style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', background: 'var(--surface-color)', borderColor: 'var(--warning-color)', color: 'var(--warning-color)' }}
+              >
+                Send for Manual Review
+              </button>
+            </div>
+          </div>
+        )}
+
         {error && <p className="error-text mb-4">{error}</p>}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
