@@ -68,3 +68,12 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to process ID document' });
   }
 }
+
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4.5mb',
+    },
+  },
+};

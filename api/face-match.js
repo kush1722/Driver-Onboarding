@@ -81,3 +81,12 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Failed to verify faces' });
   }
 }
+
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4.5mb',
+    },
+  },
+};
