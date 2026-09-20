@@ -18,24 +18,36 @@ export default async function handler(req, res) {
 
   try {
     // Helper function to fetch image from Supabase Storage and convert to Base64
-    const fetchImageAsBase64 = async (path) => {
+    const fetchImageAsBase64 = async (docType) => {
+      // 1. Get exact file path from DB
+      const { data: docRecord, error: docErr } = await supabase
+        .from('documents')
+        .select('file_url')
+        .eq('application_id', applicationId)
+        .eq('type', docType)
+        .single();
+        
+      if (docErr || !docRecord) throw new Error(`Could not find ${docType} in database`);
+
+      // 2. Fetch signed URL
       const { data: urlData, error: urlErr } = await supabase.storage
         .from('driver-documents')
-        .createSignedUrl(path, 60);
+        .createSignedUrl(docRecord.file_url, 60);
 
-      if (urlErr || !urlData?.signedUrl) throw new Error(`Could not access ${path} in storage`);
+      if (urlErr || !urlData?.signedUrl) throw new Error(`Could not access ${docType} in storage`);
 
+      // 3. Download image
       const imageRes = await fetch(urlData.signedUrl);
-      if (!imageRes.ok) throw new Error(`Failed to download ${path}`);
+      if (!imageRes.ok) throw new Error(`Failed to download ${docType}`);
 
       const arrayBuffer = await imageRes.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       return buffer.toString('base64');
     };
 
-    // Download both images into memory
-    const idData = await fetchImageAsBase64(`${applicationId}/id_front.jpg`);
-    const selfieData = await fetchImageAsBase64(`${applicationId}/selfie.jpg`);
+    // Download both images into memory using their correct file paths
+    const idData = await fetchImageAsBase64('id_front');
+    const selfieData = await fetchImageAsBase64('selfie');
     const idMime = 'image/jpeg';
     const selfieMime = 'image/jpeg';
 

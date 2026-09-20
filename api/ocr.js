@@ -17,12 +17,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const fileName = isLicence ? 'license_front.jpg' : 'id_front.jpg';
+    const docType = isLicence ? 'license_front' : 'id_front';
     
+    // Get the exact file path from the database (so we don't guess .jpg or .png)
+    const { data: docRecord, error: docErr } = await supabase
+      .from('documents')
+      .select('file_url')
+      .eq('application_id', applicationId)
+      .eq('type', docType)
+      .single();
+      
+    if (docErr || !docRecord) {
+      return res.status(400).json({ error: `Could not find ${docType} in database` });
+    }
+
     // Create a temporary signed URL to download the image from the private bucket
     const { data: urlData, error: urlErr } = await supabase.storage
       .from('driver-documents')
-      .createSignedUrl(`${applicationId}/${fileName}`, 60);
+      .createSignedUrl(docRecord.file_url, 60);
 
     if (urlErr || !urlData?.signedUrl) {
       console.error("Failed to get signed URL:", urlErr);
