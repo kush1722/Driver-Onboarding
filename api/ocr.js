@@ -55,19 +55,33 @@ export default async function handler(req, res) {
     const mimeType = docRecord.file_url.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
     const prompt = `
-      You are an expert identity document validator.
-      I am providing an image of an ID document.
+      You are an expert identity document validator for a Zimbabwean driver onboarding system.
+      I am providing an image of an ID document (either a Zimbabwean National ID or a Driver's Licence).
       The user claims their full name is "${fullName}" and their date of birth is "${dateOfBirth || 'Unknown'}".
-      Carefully extract the name, date of birth, and the unique ID number (e.g. document number, license number, or national ID number) from the document.
-      IMPORTANT: If this is a Zimbabwean National ID, the ID number strictly follows the format of digits, a dash, more digits, a single letter, and two final digits (e.g., "79-176824K34" or "08-123456 A 12"). Do NOT include the city name (e.g., "HARARE") or any other extraneous text in the extractedIdNumber field.
-      Do the name and DOB match the user's claims? 
-      Be reasonably lenient with OCR typos, name order, or date formats (e.g. 01/12/90 matches Dec 1st 1990).
+
+      STEP 1 — Extract the following from the document:
+      - Full name: On Zimbabwean National IDs, the name is split into "Surname" and "Given Name(s)" fields.
+        Combine them into a single full name (e.g. Surname "JOHN" + Given Names "JOEL NQOBILE" = "JOHN JOEL NQOBILE").
+      - Date of birth (in any format shown on the document)
+      - ID/Licence number: For Zimbabwean National IDs, this strictly follows the format digits-dash-digits-letter-digits
+        (e.g. "63-2441490B63" or "79-176824 K 34"). Do NOT include city names like "HARARE" or "CHITUNGWIZA".
+
+      STEP 2 — Compare the extracted name and DOB against the user's claims:
+      - NAME MATCHING RULES (be generous — any of these count as a match):
+        * The same words appear in any order (e.g. "Joel John" matches "JOHN JOEL NQOBILE" because both words are present)
+        * Minor OCR typos or spelling differences
+        * Middle names being present on the ID but absent in the claim (or vice versa)
+        * All-caps vs mixed-case differences
+      - DOB MATCHING RULES:
+        * Be lenient with day/month order (01/09/2005 and 09/01/2005 could both be valid)
+        * Partial year matches (e.g. "90" matching "1990")
+
       Return ONLY a JSON object with the following exact structure, with no markdown formatting:
       {
         "isMatch": true or false,
-        "extractedName": "The name you found on the ID",
+        "extractedName": "The full name you found on the ID (surname + given names combined)",
         "extractedDob": "The DOB you found on the ID",
-        "extractedIdNumber": "The ID number you found on the document (or null if not found)"
+        "extractedIdNumber": "The ID/licence number found (or null if not found)"
       }
     `;
 

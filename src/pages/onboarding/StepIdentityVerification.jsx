@@ -25,6 +25,7 @@ export default function StepIdentityVerification({ applicationId }) {
   const [driverDetails, setDriverDetails] = useState(null);
   const [ocrStatus, setOcrStatus] = useState(null); // 'scanning', 'match', 'no_match'
   const [ocrFeedback, setOcrFeedback] = useState('');
+  const [ocrExtracted, setOcrExtracted] = useState(null); // { name, dob } from Gemini
   const [ocrCompleted, setOcrCompleted] = useState(false);
 
   useEffect(() => {
@@ -82,9 +83,14 @@ export default function StepIdentityVerification({ applicationId }) {
           newOcrStatus = 'match';
           setOcrStatus('match');
           setOcrFeedback('ID details verified automatically!');
+          setOcrExtracted(null);
         } else {
           setOcrStatus('no_match');
-          setOcrFeedback('We could not automatically verify all details. A reviewer will check this manually.');
+          setOcrFeedback('Name or date of birth could not be automatically verified.');
+          setOcrExtracted({
+            name: result.extractedName || 'Could not read',
+            dob: result.extractedDob || 'Could not read',
+          });
         }
 
         if (result.extractedIdNumber) {
@@ -237,8 +243,15 @@ export default function StepIdentityVerification({ applicationId }) {
             </div>
           )}
           {ocrStatus === 'no_match' && (
-             <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(245, 158, 11, 0.1)', color: '#F59E0B', borderRadius: '8px' }}>
-              ⚠ {ocrFeedback}
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(245, 158, 11, 0.1)', borderRadius: '8px', border: '1px solid rgba(245,158,11,0.25)' }}>
+              <p style={{ color: '#F59E0B', fontWeight: '600', fontSize: '0.875rem', margin: '0 0 0.5rem 0' }}>⚠ {ocrFeedback}</p>
+              {ocrExtracted && (
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                  <p style={{ margin: '0.1rem 0' }}>Gemini read: <strong style={{ color: 'var(--text-primary)' }}>Name — {ocrExtracted.name}</strong></p>
+                  <p style={{ margin: '0.1rem 0' }}>Gemini read: <strong style={{ color: 'var(--text-primary)' }}>DOB — {ocrExtracted.dob}</strong></p>
+                  <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem' }}>If these look correct, a manual reviewer will confirm the match. If wrong, ensure your ID photo is clear and well-lit.</p>
+                </div>
+              )}
             </div>
           )}
           
