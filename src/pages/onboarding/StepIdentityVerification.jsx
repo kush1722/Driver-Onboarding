@@ -348,7 +348,7 @@ export default function StepIdentityVerification({ applicationId }) {
         {error && <p className="error-text mb-4">{error}</p>}
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
-          <button type="submit" className="btn btn-primary" disabled={saving || checkingFaceMatch || !idFrontPreview || !selfiePreview || matchStatus === 'no_match'}>
+          <button type="submit" className="btn btn-primary" disabled={saving || checkingFaceMatch || !idFrontPreview || !selfiePreview || (matchStatus !== 'match' && matchStatus !== 'needs_review')}>
             {saving ? 'Saving...' : 'Next Step'}
           </button>
         </div>
