@@ -50,7 +50,9 @@ export default async function handler(req, res) {
     const arrayBuffer = await imageRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const data = buffer.toString('base64');
-    const mimeType = 'image/jpeg';
+    
+    // Dynamically set mimeType so Gemini doesn't crash on PNGs
+    const mimeType = docRecord.file_url.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
     const prompt = `
       You are an expert identity document validator.

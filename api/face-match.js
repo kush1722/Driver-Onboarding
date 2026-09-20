@@ -42,14 +42,22 @@ export default async function handler(req, res) {
 
       const arrayBuffer = await imageRes.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      return buffer.toString('base64');
+      const mimeType = docRecord.file_url.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      
+      return { 
+        data: buffer.toString('base64'), 
+        mimeType 
+      };
     };
 
     // Download both images into memory using their correct file paths
-    const idData = await fetchImageAsBase64('id_front');
-    const selfieData = await fetchImageAsBase64('selfie');
-    const idMime = 'image/jpeg';
-    const selfieMime = 'image/jpeg';
+    const idObj = await fetchImageAsBase64('id_front');
+    const selfieObj = await fetchImageAsBase64('selfie');
+    
+    const idData = idObj.data;
+    const idMime = idObj.mimeType;
+    const selfieData = selfieObj.data;
+    const selfieMime = selfieObj.mimeType;
 
     const prompt = `
       You are an expert biometric verification system. 
