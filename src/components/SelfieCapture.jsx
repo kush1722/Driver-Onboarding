@@ -317,158 +317,160 @@ export default function SelfieCapture({ applicationId, onCaptureSuccess }) {
           </div>
         ) : cameraMode ? (
           // ── Live camera + guided overlay ──────────────────────────────────
-          <div style={{ position: 'relative', width: '100%', background: '#000' }}>
+          <>
+            <div style={{ position: 'relative', width: '100%', background: '#000' }}>
 
-            <video
-              ref={videoRef}
-              autoPlay playsInline muted
-              style={{ width: '100%', maxHeight: '380px', objectFit: 'cover', display: 'block' }}
-            />
-
-            {/* SVG guide overlay — full cover */}
-            <svg
-              viewBox="0 0 100 100"
-              preserveAspectRatio="xMidYMid slice"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-            >
-              <defs>
-                {/* Oval clip to cut a hole in the dark overlay */}
-                <mask id="ovalMask">
-                  <rect width="100" height="100" fill="white" />
-                  <ellipse cx="50" cy="47" rx={ovalRX} ry={ovalRY} fill="black" />
-                </mask>
-              </defs>
-
-              {/* Dark overlay with oval cutout */}
-              <rect
-                width="100" height="100"
-                fill="rgba(0,0,0,0.52)"
-                mask="url(#ovalMask)"
+              <video
+                ref={videoRef}
+                autoPlay playsInline muted
+                style={{ width: '100%', maxHeight: '380px', objectFit: 'cover', display: 'block' }}
               />
 
-              {/* Oval border — base (dim) */}
-              <ellipse
-                cx="50" cy="47" rx={ovalRX} ry={ovalRY}
-                fill="none"
-                stroke="rgba(255,255,255,0.2)"
-                strokeWidth="0.5"
-              />
+              {/* SVG guide overlay — full cover */}
+              <svg
+                viewBox="0 0 100 100"
+                preserveAspectRatio="xMidYMid slice"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+              >
+                <defs>
+                  {/* Oval clip to cut a hole in the dark overlay */}
+                  <mask id="ovalMask">
+                    <rect width="100" height="100" fill="white" />
+                    <ellipse cx="50" cy="47" rx={ovalRX} ry={ovalRY} fill="black" />
+                  </mask>
+                </defs>
 
-              {/* Oval border — progress fill (animated) */}
-              <ellipse
-                cx="50" cy="47" rx={ovalRX} ry={ovalRY}
-                fill="none"
-                stroke={guideColor}
-                strokeWidth="0.8"
-                strokeDasharray={circum}
-                strokeDashoffset={circum * (1 - ovalFill)}
-                strokeLinecap="round"
-                style={{
-                  transform: 'rotate(-90deg)',
-                  transformOrigin: '50% 47%',
-                  transition: 'stroke-dashoffset 0.15s ease, stroke 0.3s ease',
-                  filter: ovalFill > 0 ? `drop-shadow(0 0 1.5px ${guideColor})` : 'none',
-                }}
-              />
+                {/* Dark overlay with oval cutout */}
+                <rect
+                  width="100" height="100"
+                  fill="rgba(0,0,0,0.52)"
+                  mask="url(#ovalMask)"
+                />
 
-              {/* ── Corner reticle brackets ── */}
-              {[
-                // top-left
-                [`M ${50 - ovalRX - 1} ${47 - ovalRY + 5} L ${50 - ovalRX - 1} ${47 - ovalRY - 1} L ${50 - ovalRX + 5} ${47 - ovalRY - 1}`],
-                // top-right
-                [`M ${50 + ovalRX + 1} ${47 - ovalRY + 5} L ${50 + ovalRX + 1} ${47 - ovalRY - 1} L ${50 + ovalRX - 5} ${47 - ovalRY - 1}`],
-                // bottom-left
-                [`M ${50 - ovalRX - 1} ${47 + ovalRY - 5} L ${50 - ovalRX - 1} ${47 + ovalRY + 1} L ${50 - ovalRX + 5} ${47 + ovalRY + 1}`],
-                // bottom-right
-                [`M ${50 + ovalRX + 1} ${47 + ovalRY - 5} L ${50 + ovalRX + 1} ${47 + ovalRY + 1} L ${50 + ovalRX - 5} ${47 + ovalRY + 1}`],
-              ].map((d, i) => (
-                <path
-                  key={i}
-                  d={d[0]}
+                {/* Oval border — base (dim) */}
+                <ellipse
+                  cx="50" cy="47" rx={ovalRX} ry={ovalRY}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.2)"
+                  strokeWidth="0.5"
+                />
+
+                {/* Oval border — progress fill (animated) */}
+                <ellipse
+                  cx="50" cy="47" rx={ovalRX} ry={ovalRY}
                   fill="none"
                   stroke={guideColor}
-                  strokeWidth="1.2"
+                  strokeWidth="0.8"
+                  strokeDasharray={circum}
+                  strokeDashoffset={circum * (1 - ovalFill)}
                   strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ transition: 'stroke 0.3s ease' }}
+                  style={{
+                    transform: 'rotate(-90deg)',
+                    transformOrigin: '50% 47%',
+                    transition: 'stroke-dashoffset 0.15s ease, stroke 0.3s ease',
+                    filter: ovalFill > 0 ? `drop-shadow(0 0 1.5px ${guideColor})` : 'none',
+                  }}
                 />
-              ))}
 
-              {/* ── Live indicator dot ── */}
-              <circle cx="5" cy="5" r="1.2" fill="#EF4444">
-                <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
-              </circle>
-              <text x="7.5" y="5.9" fill="white" fontSize="3" fontWeight="bold" fontFamily="Inter,sans-serif">LIVE</text>
-            </svg>
+                {/* ── Corner reticle brackets ── */}
+                {[
+                  // top-left
+                  [`M ${50 - ovalRX - 1} ${47 - ovalRY + 5} L ${50 - ovalRX - 1} ${47 - ovalRY - 1} L ${50 - ovalRX + 5} ${47 - ovalRY - 1}`],
+                  // top-right
+                  [`M ${50 + ovalRX + 1} ${47 - ovalRY + 5} L ${50 + ovalRX + 1} ${47 - ovalRY - 1} L ${50 + ovalRX - 5} ${47 - ovalRY - 1}`],
+                  // bottom-left
+                  [`M ${50 - ovalRX - 1} ${47 + ovalRY - 5} L ${50 - ovalRX - 1} ${47 + ovalRY + 1} L ${50 - ovalRX + 5} ${47 + ovalRY + 1}`],
+                  // bottom-right
+                  [`M ${50 + ovalRX + 1} ${47 + ovalRY - 5} L ${50 + ovalRX + 1} ${47 + ovalRY + 1} L ${50 + ovalRX - 5} ${47 + ovalRY + 1}`],
+                ].map((d, i) => (
+                  <path
+                    key={i}
+                    d={d[0]}
+                    fill="none"
+                    stroke={guideColor}
+                    strokeWidth="1.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ transition: 'stroke 0.3s ease' }}
+                  />
+                ))}
 
-            {/* ── Instruction card (bottom of video) ── */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0,
-              background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)',
-              padding: '2.5rem 1rem 1rem',
-              textAlign: 'center',
-              pointerEvents: 'none',
-            }}>
-              <p style={{
-                color: guideColor,
-                fontSize: '0.9rem',
-                fontWeight: '700',
-                margin: '0 0 0.2rem',
-                textShadow: `0 0 8px ${guideColor}88`,
-                transition: 'color 0.3s ease',
-                letterSpacing: '0.01em',
+                {/* ── Live indicator dot ── */}
+                <circle cx="5" cy="5" r="1.2" fill="#EF4444">
+                  <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
+                </circle>
+                <text x="7.5" y="5.9" fill="white" fontSize="3" fontWeight="bold" fontFamily="Inter,sans-serif">LIVE</text>
+              </svg>
+
+              {/* ── Instruction card (bottom of video) ── */}
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.0) 100%)',
+                padding: '2.5rem 1rem 1rem',
+                textAlign: 'center',
+                pointerEvents: 'none',
               }}>
-                {guide.label}
-              </p>
-              {guide.subtext && (
                 <p style={{
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: '0.75rem',
-                  margin: 0,
-                  fontWeight: '400',
+                  color: guideColor,
+                  fontSize: '0.9rem',
+                  fontWeight: '700',
+                  margin: '0 0 0.2rem',
+                  textShadow: `0 0 8px ${guideColor}88`,
+                  transition: 'color 0.3s ease',
+                  letterSpacing: '0.01em',
                 }}>
-                  {guide.subtext}
+                  {guide.label}
                 </p>
-              )}
-            </div>
+                {guide.subtext && (
+                  <p style={{
+                    color: 'rgba(255,255,255,0.7)',
+                    fontSize: '0.75rem',
+                    margin: 0,
+                    fontWeight: '400',
+                  }}>
+                    {guide.subtext}
+                  </p>
+                )}
+              </div>
 
-            <div style={{
-              position: 'absolute', bottom: '1.5rem', right: '1.5rem',
-              display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end',
-            }}>
+              <div style={{
+                position: 'absolute', bottom: '1.5rem', right: '1.5rem',
+                display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end',
+              }}>
+                <button
+                  type="button"
+                  onClick={handleCapture}
+                  style={{
+                    width: '64px', height: '64px',
+                    borderRadius: '50%',
+                    border: '3px solid white',
+                    background: 'rgba(255,255,255,0.15)',
+                    backdropFilter: 'blur(6px)',
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                    transition: 'transform 0.1s ease',
+                  }}
+                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.93)'}
+                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'white' }} />
+                </button>
+              </div>
+            </div>
+            <div style={{ padding: '1rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)' }}>
               <button
                 type="button"
-                onClick={handleCapture}
+                onClick={() => setCameraMode(false)}
                 style={{
-                  width: '64px', height: '64px',
-                  borderRadius: '50%',
-                  border: '3px solid white',
-                  background: 'rgba(255,255,255,0.15)',
-                  backdropFilter: 'blur(6px)',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-                  transition: 'transform 0.1s ease',
+                  fontSize: '0.85rem', color: 'var(--text-secondary)',
+                  background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
                 }}
-                onMouseDown={e => e.currentTarget.style.transform = 'scale(0.93)'}
-                onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'white' }} />
+                Having camera trouble? Upload a photo instead
               </button>
             </div>
-          </div>
-          <div style={{ padding: '1rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--surface-border)' }}>
-            <button
-              type="button"
-              onClick={() => setCameraMode(false)}
-              style={{
-                fontSize: '0.85rem', color: 'var(--text-secondary)',
-                background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline',
-              }}
-            >
-              Having camera trouble? Upload a photo instead
-            </button>
-          </div>
+          </>
         ) : (
           // ── File upload fallback ──────────────────────────────────────────
           <div style={{ padding: '2.5rem', border: '2px dashed var(--surface-border)', borderRadius: '16px', margin: '0.5rem' }}>

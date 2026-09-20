@@ -8,12 +8,12 @@ const supabase = createClient(
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(200).json({ matched: false, reason: 'Method not allowed' });
   }
 
-  const { applicationId } = req.body;
+  const { applicationId, imageBase64 } = req.body;
   if (!applicationId) {
-    return res.status(400).json({ error: 'Missing required field: applicationId' });
+    return res.status(200).json({ matched: false, reason: 'API ERROR: Missing applicationId. Please do a hard refresh!' });
   }
 
   try {
@@ -109,8 +109,8 @@ export default async function handler(req, res) {
       reason: result.reason || ''
     });
   } catch (error) {
-    console.error('Gemini Licence Face Match Error:', error);
-    return res.status(500).json({ error: 'Failed to compare licence to selfie' });
+    console.error("Face Match API Error:", error);
+    return res.status(200).json({ matched: false, reason: `API ERROR: Gemini threw exception: ${error.message}` });
   }
 }
 

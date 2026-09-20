@@ -11,9 +11,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { applicationId, fullName, dateOfBirth, isLicence = false } = req.body;
+  const { applicationId, fullName, dateOfBirth, isLicence = false, imageBase64 } = req.body;
   if (!applicationId || !fullName) {
-    return res.status(400).json({ error: 'Missing required fields: applicationId and fullName' });
+    return res.status(200).json({ isMatch: false, extractedName: 'API ERROR: Missing applicationId. You are on the old frontend. Please clear cache and hard refresh!' });
   }
 
   try {
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       .single();
       
     if (docErr || !docRecord) {
-      return res.status(400).json({ error: `Could not find ${docType} in database` });
+      return res.status(200).json({ isMatch: false, extractedName: `API ERROR: Could not find ${docType} in DB. Missing Service Role Key?` });
     }
 
     // Create a temporary signed URL to download the image from the private bucket
@@ -38,13 +38,13 @@ export default async function handler(req, res) {
 
     if (urlErr || !urlData?.signedUrl) {
       console.error("Failed to get signed URL:", urlErr);
-      return res.status(400).json({ error: 'Could not access document in storage' });
+      return res.status(200).json({ isMatch: false, extractedName: 'API ERROR: Could not get signed URL. Missing Service Role Key?' });
     }
 
     // Download the image into memory
     const imageRes = await fetch(urlData.signedUrl);
     if (!imageRes.ok) {
-      return res.status(400).json({ error: 'Failed to download document from storage' });
+      return res.status(200).json({ isMatch: false, extractedName: 'API ERROR: Failed to download document from storage' });
     }
     
     const arrayBuffer = await imageRes.arrayBuffer();
@@ -97,7 +97,7 @@ export default async function handler(req, res) {
     return res.status(200).json(result);
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return res.status(500).json({ error: 'Failed to process ID document' });
+    return res.status(200).json({ isMatch: false, extractedName: `API ERROR: Gemini threw exception: ${error.message}` });
   }
 }
 
