@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 import { Mail, ArrowRight, UserPlus, LogIn, User } from 'lucide-react';
@@ -16,6 +16,8 @@ export default function SignIn() {
   const [timeLeft, setTimeLeft] = useState('');
 
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const linkExpired = searchParams.get('reason') === 'link_expired';
   const { session, loading: authLoading, isAdmin } = useAuth();
 
   useEffect(() => {
@@ -169,6 +171,24 @@ export default function SignIn() {
             ? 'Create an account to start your driver application and get on the road.' 
             : 'Enter your email to resume your application or view your dashboard.'}
         </p>
+        {/* ── Expired magic link notice ── */}
+        {linkExpired && (
+          <div style={{
+            marginBottom: '1.5rem',
+            padding: '0.875rem 1rem',
+            background: 'rgba(245,158,11,0.08)',
+            border: '1px solid rgba(245,158,11,0.3)',
+            borderRadius: '10px',
+            textAlign: 'left',
+          }}>
+            <p style={{ fontWeight: '600', color: 'var(--warning-color)', fontSize: '0.875rem', margin: '0 0 0.25rem 0' }}>
+              ⚠ That link has already been used
+            </p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', margin: 0, lineHeight: '1.6' }}>
+              Your approval link is one-time use only and is no longer valid. Please sign in below using your email — we'll send you a code to log in.
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           {isSignUp && (
