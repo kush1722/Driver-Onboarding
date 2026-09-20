@@ -64,7 +64,9 @@ export default async function handler(req, res) {
         Combine them into a single full name (e.g. Surname "JOHN" + Given Names "JOEL NQOBILE" = "JOHN JOEL NQOBILE").
       - Date of birth (in any format shown on the document)
       - ID/Licence number: For Zimbabwean National IDs, this strictly follows the format digits-dash-digits-letter-digits
-        (e.g. "63-2441490B63" or "79-176824 K 34"). Do NOT include city names like "HARARE" or "CHITUNGWIZA".
+        (e.g. "63-2441490 B 63" or "79-176824 K 34"). Stop at the digits — do NOT include anything after, such as
+        "CIT M" (Citizen Male), "CIT F" (Citizen Female), city names like "HARARE" or "CHITUNGWIZA", or any other text.
+        The ID number ends after the final two-digit suffix.
 
       STEP 2 — Compare the extracted name and DOB against the user's claims:
       - NAME MATCHING RULES (be generous — any of these count as a match):
