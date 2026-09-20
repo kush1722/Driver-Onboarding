@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { UploadCloud, FileText, CheckCircle, XCircle } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
@@ -16,6 +16,32 @@ export default function DocumentUploadSlot({
   const [previewUrl, setPreviewUrl] = useState(null);
   
   const fileInputRef = useRef(null);
+
+  // On mount, check if a document of this type already exists and display it
+  useEffect(() => {
+    if (!applicationId || !documentType) return;
+    const loadExisting = async () => {
+      const { data: docRecord } = await supabase
+        .from('documents')
+        .select('file_url')
+        .eq('application_id', applicationId)
+        .eq('type', documentType)
+        .single();
+
+      if (!docRecord?.file_url) return;
+
+      setUploadedUrl(docRecord.file_url);
+
+      // Try to generate a signed URL for image preview
+      if (!docRecord.file_url.endsWith('.pdf')) {
+        const { data: urlData } = await supabase.storage
+          .from('driver-documents')
+          .createSignedUrl(docRecord.file_url, 300); // 5-minute URL for display
+        if (urlData?.signedUrl) setPreviewUrl(urlData.signedUrl);
+      }
+    };
+    loadExisting();
+  }, [applicationId, documentType]);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];

@@ -75,23 +75,18 @@ export default function StepDocuments({ applicationId }) {
         if (app) {
           setDriverDetails(app.drivers);
 
-          // Only restore positive statuses on load.
-          // 'no_match' is transient — it means that specific attempt failed, not that
-          // the document is permanently invalid. Restoring it shows error cards with no
-          // reason text (we don't persist reasons), which is confusing on a fresh load.
           const POSITIVE_STATUSES = [S.MATCH, S.NEEDS_REVIEW];
           if (POSITIVE_STATUSES.includes(app.licence_ocr_status)) setOcrStatus(app.licence_ocr_status);
           if (POSITIVE_STATUSES.includes(app.licence_face_match_status)) setFaceStatus(app.licence_face_match_status);
 
-          const ocrOk = app.licence_ocr_status === S.MATCH || app.licence_ocr_status === S.NEEDS_REVIEW;
-          const faceOk = app.licence_face_match_status === S.MATCH || app.licence_face_match_status === S.NEEDS_REVIEW;
-
-          if (ocrOk || faceOk) setFrontUploaded(true);
           if (app.licence_ocr_status === S.NEEDS_REVIEW || app.licence_face_match_status === S.NEEDS_REVIEW) {
             setOverrideSubmitted(true);
           }
 
           if (app.documents) {
+            // Derive frontUploaded from the actual document record (same as all other slots)
+            // so the verification cards only show when the document is genuinely present
+            if (app.documents.some(d => d.type === 'license_front')) setFrontUploaded(true);
             if (app.documents.some(d => d.type === 'license_back')) setBackUploaded(true);
             if (app.documents.some(d => d.type === 'vehicle_registration')) setRegUploaded(true);
             if (app.documents.some(d => d.type === 'vehicle_insurance')) setInsUploaded(true);
