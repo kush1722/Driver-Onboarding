@@ -38,33 +38,16 @@ export default function DocumentUploadSlot({
       console.warn("Compression failed, using original", err);
     }
 
-    // Create local preview and compress it for OCR (Vercel payload limit is 4.5MB)
+    // Create a base64 string of the file to send to OCR/Face Match APIs
+    // We previously used a canvas to downscale this, but the resulting image 
+    // was too low-quality for the AI to reliably extract small faces from ID cards.
+    // Since fileToUpload is already compressed to 1MB max by imageCompression,
+    // its base64 representation will be ~1.3MB, safely below Vercel's 4.5MB limit.
     let dataUrlPreview = null;
     if (fileToUpload.type.startsWith('image/')) {
-      // Use Canvas to guarantee the base64 string is small enough for the OCR API
       dataUrlPreview = await new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 1024;
-            let width = img.width;
-            let height = img.height;
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
-            // 0.7 quality ensures tiny base64 payload for Vercel OCR
-            resolve(canvas.toDataURL('image/jpeg', 0.7)); 
-          };
-          img.onerror = () => resolve(event.target.result); // fallback if canvas fails
-          img.src = event.target.result;
-        };
+        reader.onload = (event) => resolve(event.target.result);
         reader.readAsDataURL(fileToUpload);
       });
       setPreviewUrl(dataUrlPreview);
