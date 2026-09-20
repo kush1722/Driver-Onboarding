@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { generateContentWithRotation } from './_gemini-client.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -11,7 +11,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     
     // imageBase64 comes as "data:image/jpeg;base64,/9j/4AAQ..."
     // We need to strip the prefix for the Gemini API
@@ -40,8 +39,8 @@ export default async function handler(req, res) {
       }
     `;
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+    const response = await generateContentWithRotation({
+        model: 'gemini-3.6-flash',
         contents: [
             {
                 role: 'user',

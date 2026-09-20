@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { generateContentWithRotation } from './_gemini-client.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -11,7 +11,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     // Parse licence image
     const licenceMatches = licenceFrontBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -46,8 +45,8 @@ export default async function handler(req, res) {
       }
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+    const response = await generateContentWithRotation({
+      model: 'gemini-3.6-flash',
       config: {
         temperature: 0.0,
         responseMimeType: "application/json",
