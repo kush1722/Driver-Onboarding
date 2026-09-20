@@ -105,7 +105,28 @@ export default function OnboardingLayout() {
     return <div className="auth-container" style={{ padding: '2rem', textAlign: 'center' }}>Loading application... (AppID: {applicationId || 'null'})</div>;
   }
   if (!applicationId) {
-    return <div className="auth-container" style={{color:'red'}}>Error: Could not load your application ID. Please contact support.</div>;
+    return (
+      <div className="auth-container" style={{ padding: '2rem', textAlign: 'center' }}>
+        <div className="glass-panel" style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{ color: 'var(--error-color)', marginBottom: '1.5rem', fontWeight: '500' }}>
+            Error: Could not load your application ID.
+          </p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+            This usually happens if your account was partially deleted or is in an invalid state.
+          </p>
+          <button 
+            onClick={async () => {
+              await signOut();
+              navigate('/signin');
+            }} 
+            className="btn btn-secondary"
+            style={{ width: '100%' }}
+          >
+            Sign Out and Try Again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
